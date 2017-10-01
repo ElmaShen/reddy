@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN" "http://struts.apache.org/dtds/struts-2.0.dtd" >
+<struts>
+	<constant name="struts.i18n.encoding" value="UTF-8" />
+	<constant name="struts.devMode" value="false" />
+	<constant name="struts.configuration.xml.reload" value="false" />
+ 	<constant name="struts.action.extension" value="action" />
+	<constant name="struts.objectFactory" value="spring" />
+	<constant name="struts.multipart.maxSize" value="10737418240" />
+
+	<package name="audio-default" abstract="true" extends="struts-default">
+		<result-types>
+			<result-type name="json" class="org.apache.struts2.json.JSONResult" />
+		</result-types>
+		
+		<!-- 攔截器 -->
+		<interceptors>
+			<interceptor name="authorize" class="com.web.interceptor.AuthorizationInterceptor" />
+			
+			<interceptor-stack name="loginStack">
+				<interceptor-ref name="authorize" />
+				<interceptor-ref name="defaultStack" />
+			</interceptor-stack>
+		</interceptors>
+		
+		<default-interceptor-ref name="loginStack" />
+		 
+		<global-results>
+			<result name="Logout" type="redirectAction">
+				<param name="namespace">/</param>   
+				<param name="actionName">logout</param>   
+			</result>
+			<result name="Error" type="redirectAction">
+				<param name="namespace">/</param>
+				<param name="actionName">logout</param>
+			</result>
+		</global-results>
+	</package>
+	
+	
+	<package name="a" namespace="/" extends="struts-default">
+        <action name="login" class="com.web.action.LogonAction" method="login">
+			<result name="input" type="redirect">/login.jsp</result>
+            <result name="success" type="redirectAction">   
+            	<param name="namespace">/</param>   
+			    <param name="actionName">${actionName}</param>   
+			</result>
+        </action>
+        <action name="logout" class="com.web.action.LogonAction" method="logout">
+			<result name="success" type="redirect">/login.jsp</result>
+        </action>
+        <action name="index" class="com.web.action.LogonAction" method="index">
+			<result name="success" type="dispatcher">/index.jsp</result>
+        </action>
+	</package>
+	
+	<package name="b" namespace="/" extends="audio-default">
+		<action name="sound" class="com.web.action.SoundAction" method="sound">
+			<result name="success" type="dispatcher">/sound.jsp</result>
+        </action>
+        <action name="soundList" class="com.web.action.SoundAction" method="soundList">
+			<result name="success" type="dispatcher">/sound.jsp</result>
+        </action>
+        <action name="editSounds" class="com.web.action.SoundAction" method="editSounds">
+			<result name="success" type="dispatcher">/sound.jsp</result>
+        </action>
+        <action name="querySound" class="com.web.action.SoundAction" method="querySound">
+			<result type="json" />
+        </action>
+        <action name="downloadSound" class="com.web.action.SoundAction" method="downloadSound">
+        	<result name="success" type="stream">
+				<param name="contentType">application/octet-stream</param>
+				<param name="inputName">fileInputStream</param>
+				<param name="contentDisposition">attachment;filename="${filename}"</param> 
+				<param name="bufferSize">1024</param>
+			</result>
+	   </action>
+	   <action name="deleteSound" class="com.web.action.SoundAction" method="deleteSound">
+			<result name="success" type="redirectAction">   
+            	<param name="namespace">/</param>   
+			    <param name="actionName">soundList</param>   
+			</result>
+        </action>
+	   <action name="batchUpload" class="com.web.action.SoundAction" method="batchUpload">
+			<result type="json" />
+        </action>
+	</package>
+	
+	<package name="c" namespace="/" extends="audio-default">
+		<action name="customer" class="com.web.action.CustomerAction" method="customer">
+			<result name="success" type="dispatcher">/customer.jsp</result>
+        </action>
+        <action name="customerList" class="com.web.action.CustomerAction" method="customerList">
+			<result name="success" type="dispatcher">/customer.jsp</result>
+        </action>
+        <action name="queryCustomer" class="com.web.action.CustomerAction" method="queryCustomer">
+			<result type="json" />
+        </action>
+        <action name="editCustomer" class="com.web.action.CustomerAction" method="editCustomer">
+			<result name="success" type="dispatcher">/customer.jsp</result>
+        </action>
+        <action name="categoryCombo" class="com.web.action.CustomerAction" method="categoryCombo">
+            <result name="success" type="json"> <param name="root">jsonStr</param></result>
+        </action>
+        <action name="download" class="com.web.action.CustomerAction" method="download">
+			<result name="success" type="stream">
+				<param name="contentType">application/octet-stream</param>
+				<param name="inputName">fileInputStream</param>
+				<param name="contentDisposition">attachment;filename="${filename}"</param> 
+				<param name="bufferSize">1024</param>
+			</result>
+	   	</action>
+	   	<action name="downloadAll" class="com.web.action.CustomerAction" method="downloadAll">
+			<result name="success" type="stream">
+				<param name="inputName">fileInputStream</param>
+				<param name="bufferSize">1024</param>
+			</result>
+	   	</action>
+	   	<action name="deleteCust" class="com.web.action.CustomerAction" method="deleteCust">
+            <result name="success" type="redirectAction">   
+            	<param name="namespace">/</param>   
+			    <param name="actionName">customerList</param>   
+			</result>
+        </action>
+        <action name="deleteDocument" class="com.web.action.CustomerAction" method="deleteDocument">
+            <result type="json" />
+        </action>
+	</package>
+	
+	<package name="d" namespace="/" extends="audio-default">
+		<action name="photo" class="com.web.action.PhotoAction" method="photo">
+			<result name="success" type="dispatcher">/photo.jsp</result>
+        </action>
+        <action name="photoList" class="com.web.action.PhotoAction" method="photoList">
+			<result name="success" type="dispatcher">/photo.jsp</result>
+        </action>
+        <action name="queryPhoto" class="com.web.action.PhotoAction" method="queryPhoto">
+			<result type="json" />
+        </action>
+        <action name="editPhoto" class="com.web.action.PhotoAction" method="editPhoto">
+			<result name="success" type="redirectAction">   
+            	<param name="namespace">/</param>   
+			    <param name="actionName">photoList</param>   
+			</result>
+        </action>
+        <action name="downloadPhoto" class="com.web.action.PhotoAction" method="downloadPhoto">
+			<result name="success" type="stream">
+				<param name="contentType">application/octet-stream</param>
+				<param name="inputName">fileInputStream</param>
+				<param name="contentDisposition">attachment;filename="${filename}"</param> 
+				<param name="bufferSize">1024</param>
+			</result>
+	   	</action>
+	   	<action name="deletePhoto" class="com.web.action.PhotoAction" method="deletePhoto">
+            <result name="success" type="redirectAction">   
+            	<param name="namespace">/</param>   
+			    <param name="actionName">photoList</param>   
+			</result>
+        </action>
+	</package>
+	
+	<package name="e" namespace="/" extends="audio-default">
+		<action name="charts" class="com.web.action.ChartsAction" method="charts">
+			<result name="success" type="dispatcher">/charts.jsp</result>
+        </action>
+	</package>
+	
+	<package name="f" namespace="/" extends="audio-default">
+		<action name="account" class="com.web.action.AccountAction" method="account">
+			<result name="success" type="dispatcher">/account.jsp</result>
+        </action>
+        <action name="querySections" class="com.web.action.AccountAction" method="querySections">
+			<result type="json" />
+        </action>
+        <action name="queryAccount" class="com.web.action.AccountAction" method="queryAccount">
+			<result type="json" />
+        </action>
+        <action name="editAccount" class="com.web.action.AccountAction" method="editAccount">
+			<result type="json" />
+        </action>
+        <action name="accountList" class="com.web.action.AccountAction" method="accountList">
+			<result name="success" type="dispatcher">/account.jsp</result>
+        </action>
+	</package>
+	
+	<package name="g" namespace="/" extends="audio-default">
+		<action name="records" class="com.web.action.RecordsAction" method="records">
+			<result name="success" type="dispatcher">/records.jsp</result>
+        </action>
+        <action name="recordList" class="com.web.action.RecordsAction" method="recordList">
+			<result name="success" type="dispatcher">/records.jsp</result>
+        </action>
+	</package>
+	
+	<package name="h" namespace="/" extends="audio-default">
+		<action name="attribute" class="com.web.action.AttributeAction" method="attribute">
+			<result name="success" type="dispatcher">/attribute.jsp</result>
+        </action>
+        <action name="attributeList" class="com.web.action.AttributeAction" method="attributeList">
+			<result name="success" type="dispatcher">/attribute.jsp</result>
+        </action>
+        <action name="queryAttribute" class="com.web.action.AttributeAction" method="queryAttribute">
+			<result type="json" />
+        </action>
+        <action name="editAttribute" class="com.web.action.AttributeAction" method="editAttribute">
+			<result type="json" />
+        </action>
+	</package>
+</struts>
