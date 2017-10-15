@@ -76,6 +76,11 @@ public class SystemServiceImpl implements SystemService {
 	}
 	
 	@Override
+	public void deleteAccount(Account account){
+		accountDAO.delete(account);
+	}
+	
+	@Override
 	public List<Authority> queryAuthorityByAccid(long accId){
 		return authorityDAO.queryByAccid(accId);
 	}
@@ -150,6 +155,11 @@ public class SystemServiceImpl implements SystemService {
 	}
 	
 	@Override
+	public void deleteAttribute(Attribute attr){
+		attributeDAO.delete(attr);
+	}
+	
+	@Override
 	public PageBean querySysRecordByPage(String name, Date startDate, Date endDate, int pageSize, int page){
 		int totalCount = sysRecordDAO.getAllRowCount(name, startDate, endDate);    
         int totalPage = PageBean.countTotalPage(pageSize, totalCount);  
@@ -169,7 +179,13 @@ public class SystemServiceImpl implements SystemService {
 	}
 	
 	@Override
-	public void updateSysRecord(SysRecord record){
-		sysRecordDAO.saveOrUpdate(record);
+	public void updateSysRecord(Account	user, String action, String remark){
+		SysRecord sr = new SysRecord();
+		sr.setAccount(user.getAccount());
+		sr.setName(user.getName());
+		sr.setAction(action);
+		sr.setRemark(remark);
+		sr.setCreateDate(new Date());
+		sysRecordDAO.saveOrUpdate(sr);
 	}
 }

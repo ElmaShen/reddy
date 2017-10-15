@@ -1,5 +1,6 @@
 package com.web.service.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,14 +34,13 @@ public class AudioManageServiceImpl implements AudioManageService {
 	}
 	
 	@Override
-	public PageBean querySoundByPage(String shYear, String shMon, String shArea, String shCust, String shTitle, String shSection, 
-										Integer shSecond, String shTone, String shRole, String shSkill, int pageSize, int page){
-		int totalCount = soundDAO.getAllRowCount(shYear, shMon, shArea, shCust, shTitle, shSection, shSecond, shTone, shRole, shSkill);    
+	public PageBean querySoundByPage(String year, String mon, String area, String cust, String title, String section, String[] voices,
+									Integer second, String tone, String role, String skill, int pageSize, int page){
+		int totalCount = soundDAO.getAllRowCount(year, mon, area, cust, title, section, voices, second, tone, role, skill);    
         int totalPage = PageBean.countTotalPage(pageSize, totalCount);  
         int offset = PageBean.countOffset(pageSize, page); 
         int currentPage = PageBean.countCurrentPage(page);
-        List<Sound> list = soundDAO.queryForPage(shYear, shMon, shArea, shCust, shTitle, shSection, shSecond, shTone, shRole, shSkill, 
-        														offset, pageSize);
+        List<Sound> list = soundDAO.queryForPage(year, mon, area, cust, title, section, voices, second, tone, role, skill, offset, pageSize);
 		
 		//Set PageBean
         PageBean pageBean = new PageBean();
@@ -56,6 +56,11 @@ public class AudioManageServiceImpl implements AudioManageService {
 	@Override
 	public void deleteSound(Sound sound){
 		soundDAO.delete(sound);
+	}
+	
+	@Override
+	public List<Object[]> querySoundGroupBySec(Date startDate, Date endDate){
+		return soundDAO.queryGroupBySec(startDate, endDate);
 	}
 	
 	@Override

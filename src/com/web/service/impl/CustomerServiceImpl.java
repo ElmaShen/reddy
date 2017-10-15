@@ -33,12 +33,12 @@ public class CustomerServiceImpl implements CustomerService {
 	}
 	
 	@Override
-	public PageBean queryCustomerByPage(String section, String category, String custName, String keyword, int pageSize, int page){
-		int totalCount = customerDAO.getAllRowCount(section, category, custName, keyword);    
+	public PageBean queryCustomerByPage(String section, String[] sections, String category, String custName, String keyword, int pageSize, int page){
+		int totalCount = customerDAO.getAllRowCount(section, sections, category, custName, keyword);    
         int totalPage = PageBean.countTotalPage(pageSize, totalCount);  
         int offset = PageBean.countOffset(pageSize, page); 
         int currentPage = PageBean.countCurrentPage(page);
-        List<Customer> list = customerDAO.queryForPage(section, category, custName, keyword, offset, pageSize);
+        List<Customer> list = customerDAO.queryForPage(section, sections, category, custName, keyword, offset, pageSize);
 		
 		//Set PageBean
         PageBean pageBean = new PageBean();
