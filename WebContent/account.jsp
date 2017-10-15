@@ -45,7 +45,7 @@
 			}
 			newRow += '</td>';
 			
-			if(fn == '統計圖表'){
+			if(fn == '統計圖表' || fn == '操作記錄' || fn == '批次轉檔'){
 				newRow += '<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>';
 			}else{
 				newRow += '<td><input type="checkbox" id="add_<s:property value="%{#f.index+1}"/>" /></td>';
@@ -68,6 +68,15 @@
 		   	  function(data){ 
 		    	  $('#sTbl tbody').html("");
 		    	  var key = (type=="1")?"voice_":"sec_";
+				  //產業設定 全選	
+				  $("#checkAll").click(function() {
+				  	if($("#checkAll").prop("checked")) {
+				  		 $("input:checkbox").prop('checked', true);
+				    } else {
+				    	$("input:checkbox").prop('checked', false);
+				   	}
+				  });
+			    	
 		    	  for(var i=0; i<data.sections.length; i++){
 		    		  var row = "";
 		    		  row += "<tr>";
@@ -214,6 +223,12 @@
 	    	}	
 		);
 	}
+	
+	function deleteAccount(id){
+		if(confirm("確定刪除檔案!")){
+			location.href="deleteAccount.action?id="+id;
+		}
+	}
 </script>
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
 <!--[if lt IE 9]>
@@ -336,6 +351,9 @@
 	                                  	<div class="btn-group">
 	                                      <a class="btn btn-primary" href="#edit_dg" data-toggle="modal" data-backdrop="false" onclick="editAccount(<s:property value="id" />);"><i class="icon_pencil-edit" title="編輯"></i></a>
 	                                  	</div>
+	                                  	<s:if test='%{#deleted eq "Y"}'>
+	                                  	  <a class="btn btn-danger" href="#" onclick="deleteAccount(<s:property value="id" />);"><i class="icon_close_alt2" title="刪除"></i></a>
+	                                  	</s:if>
 	                                  </s:if>
 	                                  </td>
 	                              </tr>
@@ -412,6 +430,7 @@
 				    <h4 class="modal-title">產業設定</h4>
 				</div>
 				<div class="modal-body">
+					<input type="checkbox" id="checkAll" /><font color="red">全選</font>
 		        	<table class="table table-hover" id="sTbl">
 		        		<tbody></tbody>
 		        	</table>

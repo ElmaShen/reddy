@@ -29,6 +29,23 @@
 			location.href = "<s:url namespace='/' action='customerList' />";
 		}
 		
+		//關閉reset form
+		$('.modal').on('hidden.bs.modal', function (e) {
+			$(this).find("input,textarea,select").val('').end()
+			  	   .find("input[type=checkbox], input[type=radio]").prop("checked", "").end();
+			//移除File addRow
+			var tblRow = $('#tbl tr').length;
+			if(tblRow > 1){
+				$("#tbl tr").remove();
+				
+				var newRow  = '<tr>'; 
+					newRow += '<td><input type="file" id="upload" name="upload" /></td>';
+					newRow += '</tr>';
+				$("#tbl").append(newRow);
+			}
+		})
+		
+		
 		var sec = "<s:property value='shSection' />";
 		var cat = "<s:property value='shCategory' />";
 		if(sec != ""){
@@ -154,7 +171,8 @@
 						 tbl = "v_dTbl";
 						 newRow += '<td width="70%">'+objs[i].fileName+'</td>';
 		    		 }
-					 newRow += '<td><a class="btn btn-success" href="download.action?id='+objs[i].id+'" ><i class="icon_cloud-download_alt" title="下載"></i></a>';
+					 newRow += '<td><a class="btn btn-warning" href="onlineReadDoc.action?id='+objs[i].id+'" target="_blank"><i class="icon_zoom-in" title="檢視"></i></a></a>';
+					 newRow += '<a class="btn btn-success" href="downloadCust.action?id='+objs[i].id+'" ><i class="icon_cloud-download_alt" title="下載"></i></a>';
     				 newRow += '<a class="btn btn-danger" href="#" onclick="deleteDocument(this, '+objs[i].id+');"><i class="icon_close_alt2" title="刪除"></i></a></td>';
     				 newRow += '</tr>';
 	    			 $("#"+tbl+" tbody").append(newRow);
@@ -472,7 +490,7 @@
 						<tr>
 				    		<td align="right" width="25%">關鍵字:　</td>
 				    		<td>
-				    			<span id="v_keyword"></span>
+				    			<span id="v_keywords"></span>
 							</td>
 						</tr>
 						<tr>

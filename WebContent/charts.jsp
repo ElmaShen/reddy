@@ -13,17 +13,83 @@
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/font-awesome.min.css"/>
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/style.css">
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/style-responsive.css"/>
+<link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/jquery-ui-1.8.21.custom.css"/>
 <script type="text/javascript" src="<%=request.getContextPath()%>/js/jquery.js"></script>
+<script type="text/javascript" src="<%=request.getContextPath()%>/js/jquery-ui-1.10.4.min.js"></script>
+<script type="text/javascript" src="<%=request.getContextPath()%>/js/i18n/jquery.ui.datepicker-zh-TW.js"></script>
 <script type="text/javascript" src="<%=request.getContextPath()%>/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="<%=request.getContextPath()%>/js/jquery.scrollTo.min.js"></script>
 <script type="text/javascript" src="<%=request.getContextPath()%>/js/jquery.nicescroll.js"></script>
 <script type="text/javascript" src="<%=request.getContextPath()%>/js/scripts.js"></script>
 <script type="text/javascript" src="<%=request.getContextPath()%>/assets/chart-master/Chart.js"></script>
-<script type="text/javascript" src="<%=request.getContextPath()%>/js/chartjs-custom.js"></script>
+<%-- <script type="text/javascript" src="<%=request.getContextPath()%>/js/chartjs-custom.js"></script> --%>
 <script type="text/javascript">
 	$(document).ready(function(){
-		
+		$.datepicker.setDefaults($.datepicker.regional["zh-TW"]);
+	  	$.datepicker.setDefaults({ dateFormat: 'yy-mm-dd' });
+		$("#shStartDate").datepicker({changeYear : true, changeMonth : true, yearRange : "-10:+1"});
+		$("#shEndDate").datepicker({changeYear : true, changeMonth : true, yearRange : "-10:+1"});
+	
+		var sDate = "<s:property value='shStartDate' />";
+		var eDate = "<s:property value='shEndDate' />";
+		if(sDate != ""){
+			$("#shStartDate").val(sDate);
+		}
+		if(eDate != ""){
+			$("#shEndDate").val(eDate);
+		}
+		queryCharts();
 	});
+	
+	function queryCharts(){
+		$.get("chartsReport.action",
+		      {"shStartDate" : $("#shStartDate").val(),
+	    	   "shEndDate" : $("#shEndDate").val()},
+	    	   
+		   	  function(data){ 
+	    		 if(data.jsonStr == null){
+	    			 alert("查詢期間無統計資料");
+	    			 return;
+	    		 }
+	    		 
+	    		 var colors = ["#69D2E7","#F38630","#E0E4CC","","","","","","","",
+	    			 		   "","","","","","","","","","",
+	    			 		   "","","","","","","","","",""]
+	    		 var labels = [];
+	    		 var datas = [];
+	    		 var pieArray = [];
+	    		 var obj = null;
+	    		 var idx = 0;
+				 JSON.parse(data.jsonStr, function(key, value) {
+				 	if(key != "" && value != ""){
+				 		obj = new Object();
+				 		obj.value = value;
+				 		obj.color = colors[idx];
+				 		pieArray.push(obj);
+				 		idx++;
+				 		
+				 		labels.push(key);
+				 		datas.push(value);
+	              	}
+				 });
+
+				var pieData = pieArray;
+	  	    	var barChartData = {
+					labels : labels,
+		  	        datasets : [
+		  	            {
+		  	            	fillColor : "rgba(151,187,205,0.5)",
+		  	  				strokeColor : "rgba(151,187,205,1)",
+		  	            	data : datas
+		  	            }
+	  	        	]
+	  	    	};
+		  	    new Chart(document.getElementById("bar").getContext("2d")).Bar(barChartData);
+		  	    new Chart(document.getElementById("pie").getContext("2d")).Pie(pieData);
+	      	  },
+	      	  "json"
+  		);
+	}
 </script>
 
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
@@ -91,45 +157,50 @@
 				<h3 class="page-header"><i class="icon_piechart"></i> 統計圖表</h3>
 			</div>
 		</div>
-            <div class="row">
-              <!-- chart morris start -->
-              <div class="col-lg-12">
-                  <section class="panel">
-                      <div class="panel-body">
-                        <div class="tab-pane" id="chartjs">
-                      <div class="row">
-                          <!-- Pie -->
-                          <div class="col-lg-6">
-                              <section class="panel">
-                                  <header class="panel-heading">
-                                      Pie
-                                  </header>
-                                  <div class="panel-body text-center">
-                                      <canvas id="pie" height="300" width="400"></canvas>
-                                  </div>
-                              </section>
-                          </div>                
-                          <!-- Bar -->
-                          <div class="col-lg-6">
-                              <section class="panel">
-                                  <header class="panel-heading">
-                                      Bar
-                                  </header>
-                                  <div class="panel-body text-center">
-                                      <canvas id="bar" height="300" width="500"></canvas>
-                                  </div>
-                              </section>
-                          </div>
-                      </div>
+        <div class="row">
+          <div class="col-lg-12">
+              <section class="panel">
+                  <header class="panel-heading">查詢條件</header>
+                  <div class="panel-body">
+                      <s:form id="shForm" class="form-inline" role="form">
+	                      <label class="control-label">日期</label>&nbsp;
+	                   	  <input type="text" id="shStartDate" /> ~ <input type="text" id="shEndDate" />&nbsp;&nbsp;
+	                   	  <button type="button" class="btn btn-primary" onclick="queryCharts();">查詢</button>&nbsp;
+	                   	  <button type="button" class="btn btn-primary" onclick="$('#shForm').find('input[type=text], textarea').val('');">清除</button>
+                      </s:form>
                   </div>
-                      </div>
-                      </div>
-                    </section>
-              </div>
-              <!-- chart morris start -->
-            </div>
+       		  </section>
+       	  </div>
+        </div>
+        <div class="row">
+        	<div class="col-lg-12">
+        		<section class="panel">
+                    <div class="tab-pane" id="chartjs">
+	                  <div class="row">
+	                      <!-- Pie -->
+	                      <div class="col-lg-6">
+	                          <section class="panel">
+	                              <header class="panel-heading">圓餅圖</header>
+	                              <div class="panel-body text-center">
+	                                  <canvas id="pie" height="300" width="400"></canvas>
+	                              </div>
+	                          </section>
+	                      </div>                
+	                      <!-- Bar -->
+	                      <div class="col-lg-6">
+	                          <section class="panel">
+	                              <header class="panel-heading">長條圖</header>
+	                              <div class="panel-body text-center">
+	                                  <canvas id="bar" height="300" width="500"></canvas>
+	                              </div>
+	                          </section>
+	                      </div>
+	                  </div>
+              		</div>
+           	  	</section>   
+        	</div>
+        </div>
       </section>
-    </section>
     <!-- container section end -->
   </body>
 </html>

@@ -143,12 +143,12 @@
                               <tbody>
 	                              <s:iterator value="pageBean.list" status="i">
 	                              <tr>
-	                                  <td><s:property value="%{#i.index+1}"/></td>
-	                                  <td><s:property value="account"/></td>
-	                                  <td><s:property value="name"/></td>
-	                                  <td><s:property value="action"/></td>
-	                                  <td><s:date name="createDate" format="yyyy-MM-dd HH:mm"/></td>
-	                                  <td><s:property value="remark"/></td>
+	                                  <td width="6%"><s:property value="%{#i.index+1}"/></td>
+	                                  <td width="10%"><s:property value="account"/></td>
+	                                  <td width="14%"><s:property value="name"/></td>
+	                                  <td width="15%"><s:property value="action"/></td>
+	                                  <td width="15%"><s:date name="createDate" format="yyyy-MM-dd HH:mm"/></td>
+	                                  <td width="30%"><s:property value="remark"/></td>
 	                              </tr>
 	                              </s:iterator>
                               </tbody>

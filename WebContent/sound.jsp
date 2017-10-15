@@ -18,7 +18,6 @@
 <script type="text/javascript" src="<%=request.getContextPath()%>/js/jquery.scrollTo.min.js"></script>
 <script type="text/javascript" src="<%=request.getContextPath()%>/js/jquery.nicescroll.js"></script>
 <script type="text/javascript" src="<%=request.getContextPath()%>/js/scripts.js"></script>
-<script type="text/javascript" src="<%=request.getContextPath()%>/js/jquery.blockUI.js"></script>
 <script type="text/javascript">
 	$(document).ready(function(){
 		var message = "<s:property value='message' />";
@@ -29,7 +28,9 @@
 		if(success == "Y"){
 			location.href = "<s:url namespace='/' action='soundList' />";
 		}
+		$("#area").val("台北市");
 		
+		//關閉reset form
 		$('.modal').on('hidden.bs.modal', function (e) {
 			$(this).find("input,textarea,select").val('').end()
 			  	   .find("input[type=checkbox], input[type=radio]").prop("checked", "").end();
@@ -43,58 +44,9 @@
 					newRow += '</tr>';
 				$("#tbl").append(newRow);
 			}
+
+			$("#area").val("台北市");
 		})
-		
-		$("#area").val("台北市");
-		
-// 		$('#batch_btn').click(function() { 
-// 			if($("#batchPath").val() == ""){
-// 				alert("請填入資料夾路徑");
-// 				return;
-// 			}
-// 			$.blockUI({ message: $('#question'), css: { width: '275px' } }); 
-// 		}); 
-// 		$('#yes').click(function() { 
-// 		    // update the block message 
-// 		    $.blockUI({ message: "<h4>檔案上傳中...</h4>" }); 
-		    
-// 		    $.get("batchUpload.action",
-// 				      {"batchPath" : $("#batchPath").val()},
-// 				   	  function(data){ 
-// 				    	  alert(data.message);
-// 				    	  if(data.success == "Y"){
-// 				    		  $("#totTime").text(data.totTime);
-// 				    		  $("#count").text(data.slist.length + data.flist.length+"個");
-// 				    		  $("#success").text(data.slist.length+"個");
-// 				    		  $("#fail").text(data.flist.length+"個");
-// 				    		  if(data.flist.length != 0){
-// 				    			  for(var i=0; i<data.flist.length; i++){
-// 				    				  var row = "";
-// 						    		  row += "<tr>";
-// 						    		  row += '<td>'+(i+1)+'</td>';
-// 						    		  row += '<td>'+data.flist.get(i)+'</td>';
-// 						    		  row += "</tr>";
-// 				    				  $('#fTbl tbody').append(row);
-// 				    			  }
-// 				    		  }
-// 				    	  }
-// 				    	  $.unblockUI();
-// 				      },
-// 				      "json"
-// 			  	);
-// 		    $.ajax({ 
-// 		        url: 'wait.php', 
-// 		        cache: false, 
-// 		        complete: function() { 
-// 		            // unblock when remote call returns 
-// 		            $.unblockUI(); 
-// 		        } 
-// 		    }); 
-// 		}); 
-// 		$('#no').click(function() { 
-// 		    $.unblockUI(); 
-// 		    return false; 
-// 		}); 
 	});
 	
 	function querySoundList(page){
@@ -102,27 +54,49 @@
 		$("#page").val(page);
 		$("#shForm").get(0).submit();
 	}
-	function editSound(id){
+	function viewSound(id){
 		$.get("querySound.action",
 		      {"id" : id},
 		   	  function(data){ 
-		    	 $("#sid").val(data.sound.id);
-		    	 $("#year").val(data.sound.year);
-		    	 $("#month").val(data.sound.month);
-		    	 $("#custName").val(data.sound.custName);
-		    	 $("#title").val(data.sound.title);
-		    	 $("#area").val(data.sound.area);
-		    	 $("#second").val(data.sound.second);
-		    	 $("#voice").val(data.sound.section);
-		    	 $("#role").val(data.sound.role);
-		    	 $("#skill").val(data.sound.skill);
-		    	 $("#tone").val(data.sound.tone);
+		    	 $("#v_year").text(data.sound.year);
+		    	 $("#v_month").text(data.sound.month);
+		    	 $("#v_custName").text(data.sound.custName);
+		    	 $("#v_title").text(data.sound.title);
+		    	 $("#v_area").text(data.sound.area);
+		    	 $("#v_second").text(data.sound.second);
+		    	 $("#v_voice").text(data.sound.sectionName);
+		    	 $("#v_role").text(data.sound.role);
+		    	 $("#v_skill").text(data.sound.skillName);
+		    	 $("#v_tone").text(data.sound.toneName);
 		      },
 		      "json"
 	  	);
-		//不可上傳檔案		
-		$('#fhead').css("display", "none");
-		$('#fbody').css("display", "none");
+	}
+	function editSound(id){
+		if(id == 0){
+			$('#fhead').show();
+			$('#fbody').show();
+		}else{
+			$.get("querySound.action",
+			      {"id" : id},
+			   	  function(data){ 
+			    	 $("#sid").val(data.sound.id);
+			    	 $("#year").val(data.sound.year);
+			    	 $("#month").val(data.sound.month);
+			    	 $("#custName").val(data.sound.custName);
+			    	 $("#title").val(data.sound.title);
+			    	 $("#area").val(data.sound.area);
+			    	 $("#second").val(data.sound.second);
+			    	 $("#voice").val(data.sound.section);
+			    	 $("#role").val(data.sound.role);
+			    	 $("#skill").val(data.sound.skill);
+			    	 $("#tone").val(data.sound.tone);
+			      },
+			      "json"
+		  	);
+			$('#fhead').hide();
+			$('#fbody').hide();
+		}
 	}
 	function setFieldValue(o){
 		val = o.value;
@@ -217,42 +191,6 @@
 			return;
 		}
 		$("#mform").submit();
-	}
-	
-	function batchUpload(){
-		$("#totTime").text("");
-		$("#count").text("");
-		$("#success").text("");
-		$("#fail").text("");
-		$('#fTbl tbody').html("");
-		
-		if($("#batchPath").val() == ""){
-			alert("請填入資料夾路徑");
-			return;
-		}
-		$.get("batchUpload.action",
-		      {"batchPath" : $("#batchPath").val()},
-		   	  function(data){ 
-		    	  alert(data.message);
-		    	  if(data.success == "Y"){
-		    		  $("#totTime").text(data.totTime);
-		    		  $("#count").text(data.slist.length + data.flist.length+"個");
-		    		  $("#success").text(data.slist.length+"個");
-		    		  $("#fail").text(data.flist.length+"個");
-		    		  if(data.flist.length != 0){
-		    			  for(var i=0; i<data.flist.length; i++){
-		    				  var row = "";
-				    		  row += "<tr>";
-				    		  row += '<td>'+(i+1)+'</td>';
-				    		  row += '<td>'+data.flist[i]+'</td>';
-				    		  row += "</tr>";
-		    				  $('#fTbl tbody').append(row);
-		    			  }
-		    		  }
-		    	  }
-		      },
-		      "json"
-	  	);
 	}
 	
 	function deleteSound(id){
@@ -387,8 +325,7 @@
                          <div class="col-lg-3">
                          		<button type="button" class="btn btn-primary" onclick="querySoundList(0);">查詢</button>
                          	<s:if test='%{#added eq "Y"}'>
-								<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit_dg" data-backdrop="false">新增</button>
-	                           	<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#batch_dg" data-backdrop="false">批次轉檔</button>                         	
+								<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit_dg" data-backdrop="false" onclick="editSound(0);">新增</button>
                          	</s:if>
                          </div>	
 	                  	</div>
@@ -410,7 +347,7 @@
 	                                  <th>產業類別</th>
 	                                  <th>調性</th>
 	                                  <!-- <th>角色</th> -->
-	                                  <th>手法</th>
+	                                  <!-- <th>手法</th> -->
 	                                  <th>Action</th>
 	                              </tr>
                               </thead>
@@ -427,9 +364,12 @@
 	                                  <td><s:property value="sectionName" /></td>
 	                                  <td><s:property value="toneName" /></td>
 	                                  <!-- <td><s:property value="role" /></td> -->
-	                                  <td><s:property value="skillName" /></td>
+	                                  <!-- <td><s:property value="skillName" /></td> -->
 	                                  <td>
 	                                  <div class="btn-group">
+	                                  	  <a class="btn btn-warning" href="#view_dg" data-toggle="modal" data-backdrop="false" onclick="viewSound(<s:property value="id" />);">
+	                                		<i class="icon_zoom-in" title="檢視"></i>
+	                                	  </a>
 	                                  <s:if test='%{#added eq "Y"}'>
 	                                  	  <a class="btn btn-primary" href="#edit_dg" data-toggle="modal" data-backdrop="false" onclick="editSound(<s:property value="id" />);">
 	                                      	<i class="icon_pencil-edit" title="編輯"></i>
@@ -545,7 +485,7 @@
 								</td>
 							</tr>
 							<tr id="fbody">
-								<td>&nbsp;</td>
+								<td align="right" width="25%">&nbsp;</td>
 								<td>
 									<table id="tbl">
 					    				<tr><td><input type="file" id="upload" name="upload" onchange="setFieldValue(this);" /></td></tr>
@@ -563,59 +503,76 @@
 		</div>
 	</div>
 	
-	<div class="modal fade" id="batch_dg" role="dialog">
+	<div class="modal fade" id="view_dg" role="dialog">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-				    <h4 class="modal-title">批次轉檔</h4>
+				    <h4 class="modal-title">檢視音檔</h4>
 				</div>
 				<div class="modal-body">
-				    <form id="bForm" class="form-inline" role="form">
-<!-- 						資料夾路徑<input type="file"> -->
-						資料夾路徑:&nbsp;<s:textfield id="batchPath" theme="simple" size="40%" />&nbsp;
-                        <button type="button" class="btn btn-primary" id="batch_btn" onclick="batchUpload();">開始轉檔</button>
-					</form>
-					
-					耗費時間 : <font color="blue"><label id="totTime">&nbsp;</label></font><br>
-					檔案總數 : <font color="blue"><label id="count">&nbsp;</label></font><br>
-					轉檔成功 : <font color="blue"><label id="success">&nbsp;</label></font><br>
-					轉檔失敗 : <font color="red"><label id="fail">&nbsp;</label></font><br>
-					<div class="container">
-						  <ul class="nav nav-tabs">
-							    <li class="active"><a data-toggle="tab" href="#home">失敗</a></li>
-<!-- 							    <li><a data-toggle="tab" href="#menu1">失敗</a></li> -->
-						  </ul>
-						  <div class="tab-content">
-						    <div id="home" class="tab-pane fade in active">
-						      <table class="table table-hover" id="fTbl">
-			                           <thead class="panel-heading">
-				                           <tr>
-				                               <th>#</th>
-				                               <th>檔案名稱</th>
-				                           </tr>
-			                           </thead>
-			                           <tbody>
-			                           </tbody>
-		                         </table>
-						    </div>
-<!-- 						    <div id="menu1" class="tab-pane fade"> -->
-<!-- 						      <h3>失敗</h3> -->
-<!-- 						    </div> -->
-						  </div>
+				    <table>
+				    	<tr>
+				    		<td align="right" width="25%">年份:　</td>
+				    		<td>
+				    			<span id="v_year"></span>
+				    			<span id="v_month"></span>
+							</td>
+						</tr>
+						<tr>
+				    		<td align="right" width="25%">客戶:　</td>
+				    		<td>
+				    			<span id="v_custName"></span>
+							</td>
+						</tr>
+						<tr>
+				    		<td align="right" width="25%">篇名:　</td>
+				    		<td>
+				    			<span id="v_title"></span>
+							</td>
+						</tr>
+						<tr>
+				    		<td align="right" width="25%">地區:　</td>
+				    		<td>
+								<span id="v_area"></span>
+							</td>
+						</tr>
+						<tr>
+				    		<td align="right" width="25%">秒數:　</td>
+				    		<td>
+								<span id="v_second"></span>
+							</td>
+						</tr>
+						<tr>
+				    		<td align="right" width="25%">產業類別:　</td>
+				    		<td>
+								<span id="v_voice"></span>
+							</td>
+						</tr>
+						<tr>
+				    		<td align="right" width="25%">角色:　</td>
+				    		<td>
+								<span id="v_role"></span>
+							</td>
+						</tr>
+						<tr>
+				    		<td align="right" width="25%">手法:　</td>
+				    		<td>
+								<span id="v_skill"></span>
+							</td>
+						</tr>
+						<tr>
+				    		<td align="right" width="25%">調性:　</td>
+				    		<td>
+								<span id="v_tone"></span>
+							</td>
+						</tr>
+				    </table>
+				    <div class="modal-footer">
+		   	 			<button type="button" class="btn btn-default" data-dismiss="modal">關閉</button>
 					</div>
-				</div>
-				<div class="modal-footer">
-				    <button type="button" class="btn btn-default" data-dismiss="modal">關閉</button>
 				</div>
 			</div>
 		</div>
 	</div>
   </body>
 </html>
-
-<div id="question" style="display:none; cursor: default;"> 
-	<h4>是否開始執行?</h4> 
-	<input type="button" id="yes" value="Yes" /> 
-	<input type="button" id="no" value="No" />
-	<p>
-</div> 

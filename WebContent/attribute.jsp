@@ -104,6 +104,12 @@
 	    	}	
 		);
 	}
+	
+	function deleteAttribute(id){
+		if(confirm("確定刪除檔案!")){
+			location.href="deleteAttribute.action?id="+id;
+		}
+	}
 </script>
 <!-- HTML5 shim and Respond.js IE8 support of HTML5 -->
 <!--[if lt IE 9]>
@@ -223,11 +229,18 @@
 	                                  <td><s:property value="attrName"/></td>
 	                                  <td><s:if test='%{isuse eq "Y"}'>是</s:if><s:else>否</s:else></td>
 	                                  <td>
-	                                  <s:if test='%{#added eq "Y"}'>
-	                                  	<div class="btn-group">
-	                                      <a class="btn btn-primary" href="#edit_dg" data-toggle="modal" data-backdrop="false" onclick="editAttribute(<s:property value="id" />);"><i class="icon_pencil-edit" title="編輯"></i></a>
-	                                  	</div>
-	                                  </s:if>
+									  <div class="btn-group">
+	                                  	<s:if test='%{#added eq "Y"}'>
+	                                      <a class="btn btn-primary" href="#edit_dg" data-toggle="modal" data-backdrop="false" onclick="editAttribute(<s:property value="id" />);">
+	                                      	<i class="icon_pencil-edit" title="編輯"></i>
+	                                      </a>
+	                                    </s:if>
+	                                    <s:if test='%{#deleted eq "Y"}'>
+	                                  	  <a class="btn btn-danger" href="#" onclick="deleteAttribute(<s:property value="id" />);">
+	                                  	  	<i class="icon_close_alt2" title="刪除"></i>
+	                                  	  </a>
+	                                  	</s:if>
+	                                  </div>
 	                                  </td>
 	                              </tr>
 	                              </s:iterator>

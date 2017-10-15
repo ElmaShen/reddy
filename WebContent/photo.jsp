@@ -20,6 +20,12 @@
 <script type="text/javascript" src="<%=request.getContextPath()%>/js/scripts.js"></script>
 <script type="text/javascript">
 	$(document).ready(function(){
+		$('.modal').on('hidden.bs.modal', function (e) {
+			$(this).find("input,textarea,select").val('').end()
+		  	   .find("input[type=checkbox], input[type=radio]").prop("checked", "").end();
+			
+			$("#playVideo").get(0).pause();
+		})
 	});
 	
 	function queryPhotoList(page){
@@ -36,9 +42,27 @@
 		    	 $("#keywords").val(data.audio.keywords);
 		    	 $("#gno").val(data.audio.gno);
 		    	 $("#gname").val(data.audio.gname);
+		    	 $("#ftype").val(data.audio.ftype);
 		      },
 		      "json"
 	  	);
+	}
+	
+	function editVideo(id){
+		$("#vTbl tr:last").show();
+		if(id != 0){
+			$.get("queryPhoto.action",
+			      {"id" : id},
+			   	  function(data){ 
+			    	 $("#vid").val(data.audio.id);
+			    	 $("#vgno").val(data.audio.gno);
+			    	 $("#vgname").val(data.audio.gname);
+			    	 $("#vftype").val(data.audio.ftype);
+			      },
+			      "json"
+		  	);
+			$("#vTbl tr:last").hide();
+		}
 	}
 	
 	function addFile(){
@@ -61,6 +85,18 @@
 		}	
 	}
 	
+	function checkVideoFile(o){
+		val = o.value;
+		var str = val.substring(val.lastIndexOf("\\")+1);
+		var ary = str.split(".");
+		var str = ary[ary.length-1];
+		if(str != "mp4" && str != "MP4"){
+			alert("檔案需為影片格式!");
+			o.value = "";
+			return;
+		}	
+	}
+	
 	function submitForm(){
 		if($("#aid").val() == 0){
 			var isOk = false;
@@ -77,8 +113,18 @@
 				return;
 			}
 		}
-		
 		$("#mform").submit();
+	}
+	
+	function submitVideoForm(){
+		if($("#vid").val() == 0){
+			var val = document.forms['vform'].elements['upload'].value;
+			if(val == ""){
+				alert("請選擇需上傳的影片!");
+				return;
+			}
+		}
+		$("#vform").submit();
 	}
 	
 	function deletePhoto(id){
@@ -87,8 +133,67 @@
 		}
 	}
 	
-	function setImg(uri){
-		$("#picture").attr("src",uri);
+	var jsImg = null;
+	var curIdx = 0;
+	function setImg(gno,uri){
+		$("#pic_prev_btn").hide();
+		$("#pic_next_btn").hide();
+		
+		if(gno != 0){
+			jsImg = new Array();
+			curIdx = 0;
+			$.get("queryByGno.action",
+			      {"gno" : gno},
+			   	  function(data){ 
+			    	  var objs = data.alist;
+			    	  for(var i=0; i<objs.length; i++){
+			    		  jsImg.push(data.alist[i].fileUri);
+			    		  if(uri == data.alist[i].fileUri){
+			    			  $("#picture").attr("src",uri);
+			    			  curIdx = i;
+			    		  }
+			    	  }
+					  
+			    	  if(curIdx != 0){
+						$("#pic_prev_btn").show();
+					  }
+					  if(curIdx < jsImg.length-1){
+						$("#pic_next_btn").show();
+					  }
+			      },
+			      "json"
+		  	);
+		}else{
+			$("#picture").attr("src",uri);
+		}
+	}
+	
+	function changeImg(type){
+		if(type == "prev"){
+			if(curIdx > 0){
+				curIdx -= 1;
+				$("#pic_next_btn").show();
+				
+				if(curIdx == 0){
+					$("#pic_prev_btn").hide();
+				}
+			}
+		}
+		if(type == "next"){
+			if(curIdx < jsImg.length-1){
+				curIdx += 1;
+				$("#pic_prev_btn").show();
+				
+				if(curIdx == jsImg.length-1){
+					$("#pic_next_btn").hide();
+				}
+			}
+		}
+		$("#picture").attr("src",jsImg[curIdx]);
+	}
+	
+	function setVideo(uri){
+		$("#playVideo").attr("src", uri);
 	}
 </script>
 
@@ -174,13 +279,14 @@
                           <div class="panel-body">
                               <s:form id="shForm" class="form-inline" role="form" namespace="/" action="photoList" method="post">
                               	  <s:hidden name="page" id="page" />
-                              	  <label class="control-label">關鍵字</label>&nbsp;
-                                  <s:textfield id="shKeywords" name="shKeywords" theme="simple" />&nbsp;&nbsp;
                                   <label class="control-label">群組</label>&nbsp;
                                   <s:textfield id="shGname" name="shGname" theme="simple" />&nbsp;&nbsp;
+                                  <label class="control-label">關鍵字</label>&nbsp;
+                                  <s:textfield id="shKeywords" name="shKeywords" theme="simple" />&nbsp;&nbsp;
                                   	<button type="button" class="btn btn-primary" onclick="queryPhotoList(0);">查詢</button>&nbsp;
                                   <s:if test='%{#added eq "Y"}'>
-                                  	<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit_dg" data-backdrop="false">新增</button>
+                                  	<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#photo_dg" data-backdrop="false">新增照片</button>&nbsp;
+                                  	<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#video_dg" data-backdrop="false" onclick="editVideo(0);">新增影片</button>
                                   </s:if>
                               </s:form>
                           </div>
@@ -194,8 +300,8 @@
                               <thead class="panel-heading">
                               <tr>
                                   <th>#</th>
-                                  <th>關鍵字</th>
                                   <th>群組</th>
+                                  <th>關鍵字</th>
                                   <th>檔名</th>
                                   <th>Action</th>
                               </tr>
@@ -204,16 +310,32 @@
 	                              <s:iterator value="pageBean.list" status="i">
 	                              <tr>
 	                                  <td><s:property value="%{#i.index+1}"/></td>
-	                                  <td><s:property value="keywords"/></td>
 	                                  <td><s:property value="gname"/></td>
+	                                  <td><s:property value="keywords"/></td>
 	                                  <td><s:property value="fileName"/></td>
 	                                  <td>
 	                                  <div class="btn-group">
-	                                  	  <a class="btn btn-warning" href="#view_dg" data-toggle="modal" data-backdrop="false" onclick="setImg('<s:property value="fileUri" />');">
-	                                	  	<i class="icon_zoom-in" title="檢視"></i>
-	                                	  </a>
+	                                  	<s:if test='%{ftype eq "P"}'>
+	                                  		<a class="btn btn-warning" href="#v_photo_dg" data-toggle="modal" data-backdrop="false" onclick="setImg('<s:property value="gno" />','<s:property value="fileUri" />');">
+		                                	  	<i class="icon_zoom-in" title="檢視"></i>
+		                               	  	</a>
+	                                  	</s:if>
+	                                  	<s:else>
+	                                  		<a class="btn btn-warning" href="#v_video_dg" data-toggle="modal" data-backdrop="false" onclick="setVideo('<s:property value="fileUri" />');">
+		                                	  	<i class="icon_zoom-in" title="檢視"></i>
+		                               	  	</a>
+	                                  	</s:else>
 	                                  <s:if test='%{#added eq "Y"}'>
-	                                  	  <a class="btn btn-primary" href="#edit_dg" data-toggle="modal" data-backdrop="false" onclick="editPhoto(<s:property value="id" />);"><i class="icon_pencil-edit" title="編輯"></i></a>
+                        				<s:if test='%{ftype eq "P"}'>
+	                                  		<a class="btn btn-primary" href="#photo_dg" data-toggle="modal" data-backdrop="false" onclick="editPhoto(<s:property value="id" />);">
+		                                  		<i class="icon_pencil-edit" title="編輯"></i>
+	                        				</a>
+	                                  	</s:if>
+	                                  	<s:else>
+	                                  		<a class="btn btn-primary" href="#video_dg" data-toggle="modal" data-backdrop="false" onclick="editVideo('<s:property value="id" />');">
+		                                	  	<i class="icon_pencil-edit" title="編輯"></i>
+		                               	  	</a>
+	                                  	</s:else>
 	                                  </s:if>
 	                                  <s:if test='%{#download eq "Y"}'>
 	                                  	  <a class="btn btn-success" href="downloadPhoto.action?id=<s:property value="id" />"><i class="icon_cloud-download_alt" title="下載"></i></a>
@@ -253,27 +375,28 @@
       </section>
   </section>
   <!-- container section end -->
-  <div class="modal fade" id="edit_dg" role="dialog">
+  <div class="modal fade" id="photo_dg" role="dialog">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-				    <h4 class="modal-title">照片/影片上傳</h4>
+				    <h4 class="modal-title">新增照片</h4>
 				</div>
 				<s:form id="mform" namespace="/" action="editPhoto" method="post" enctype="multipart/form-data">
 					<s:hidden name="audio.id" id="aid"></s:hidden>
 					<s:hidden name="audio.gno" id="gno"></s:hidden>
+					<s:hidden name="audio.ftype" id="ftype" value="P"></s:hidden>
 					<div class="modal-body">
 						<table>
-							<tr>
-					    		<td align="right" width="25%">關鍵字:　</td>
-					    		<td>
-					    			<s:textfield id="keywords" name="audio.keywords" theme="simple" />
-								</td>
-							</tr>
 							<tr>
 					    		<td align="right" width="25%">群組:　</td>
 					    		<td>
 					    			<s:textfield id="gname" name="audio.gname" theme="simple" />
+								</td>
+							</tr>
+							<tr>
+					    		<td align="right" width="25%">關鍵字:　</td>
+					    		<td>
+					    			<s:textfield id="keywords" name="audio.keywords" theme="simple" />
 								</td>
 							</tr>
 							<tr>
@@ -299,14 +422,70 @@
 		</div>
 	</div>
 	
-	<div class="modal fade" id="view_dg" role="dialog">
+	<div class="modal fade" id="video_dg" role="dialog">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-				    <h4 class="modal-title">預覽圖片</h4>
+				    <h4 class="modal-title">新增影片</h4>
+				</div>
+				<s:form id="vform" namespace="/" action="editPhoto" method="post" enctype="multipart/form-data">
+					<s:hidden name="audio.id" id="vid"></s:hidden>
+					<s:hidden name="audio.gno" id="vgno"></s:hidden>
+					<s:hidden name="audio.ftype" id="vftype" value="V"></s:hidden>
+					<div class="modal-body">
+						<table id="vTbl">
+							<tr>
+					    		<td align="right" width="25%">名稱:　</td>
+					    		<td>
+					    			<s:textfield id="vgname" name="audio.gname" theme="simple" />
+								</td>
+							</tr>
+							<tr>
+					    		<td align="right" width="25%">檔案:　</td>
+					    		<td>
+									<input type="file" name="upload" onchange="checkVideoFile(this);" /></td>
+								</td>
+							</tr>
+					    </table>
+					    <div class="modal-footer">
+							<button type="button" class="btn btn-default" onclick="submitVideoForm();">儲存</button>
+						    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+						</div>
+					</div>
+				</s:form>
+			</div>
+		</div>
+	</div>
+	
+	<div class="modal fade" id="v_photo_dg" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+				    <h4 class="modal-title">相片閱覽</h4>
 				</div>
 				<div class="modal-body" align="center">
-					<img id="picture" src="" width="80%" height="80%">
+					<a href="#" id="pic_prev_btn" title="上一張" onclick="changeImg('prev')"><img src="img/btm_prev.gif"></a>
+					<img id="picture" src="" width="400" height="360">
+					<a href="#" id="pic_next_btn" title="下一張" onclick="changeImg('next')"><img src="img/btm_next.gif"></a>
+					
+					<div class="modal-footer">
+					    <button type="button" class="btn btn-default" data-dismiss="modal">關閉</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="modal fade" id="v_video_dg" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+				    <h4 class="modal-title">影片閱覽</h4>
+				</div>
+				<div class="modal-body" align="center">
+					<video id="playVideo" width="500" height="360" controls controlsList="nodownload">
+					    <source src="" type="video/mp4"></source>
+					</video>
 					
 					<div class="modal-footer">
 					    <button type="button" class="btn btn-default" data-dismiss="modal">關閉</button>
