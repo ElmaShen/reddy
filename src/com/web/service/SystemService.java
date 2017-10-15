@@ -2,13 +2,11 @@ package com.web.service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import com.web.dao.entity.Account;
 import com.web.dao.entity.Attribute;
 import com.web.dao.entity.Authority;
 import com.web.dao.entity.Func;
-import com.web.dao.entity.SysRecord;
 import com.web.dao.model.PageBean;
 
 public interface SystemService {
@@ -21,6 +19,8 @@ public interface SystemService {
 	public Account queryAccount(String account);
 	public PageBean queryAccountByPage(String account, String name, String isuse, int pageSize, int page);
 	public void updateAccount(Account account);
+	public void deleteAccount(Account account);
+	
 	public List<Authority> queryAuthorityByAccid(long accId);
 	public List<Authority> queryAuthorityByAccount(String account);
 	public void updateAuthority(Authority auth);
@@ -33,8 +33,9 @@ public interface SystemService {
 	public List<Attribute> querySubAttributes(String type, String parent, String isuse);
 	public PageBean queryAttributeByPage(String type, String attrName, int pageSize, int page);
 	public void updateAttribute(Attribute attr);
+	public void deleteAttribute(Attribute attr);
 	
 	//操作記錄
 	public PageBean querySysRecordByPage(String name, Date startDate, Date endDate, int pageSize, int page);
-	public void updateSysRecord(SysRecord record);
+	public void updateSysRecord(Account	user, String action, String remark);
 }

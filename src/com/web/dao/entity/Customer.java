@@ -90,7 +90,7 @@ public class Customer implements java.io.Serializable {
 		this.section = section;
 	}
 	
-	@Column(name = "category", nullable = false, length = 10)
+	@Column(name = "category", length = 10)
 	public String getCategory() {
 		return category;
 	}

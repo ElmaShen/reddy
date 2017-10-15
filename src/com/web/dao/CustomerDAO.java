@@ -45,10 +45,16 @@ public class CustomerDAO extends RootDAO {
      * 查詢所有筆數
      * @return
      */
-    public int getAllRowCount(String section, String category, String custName, String keyword){
+    public int getAllRowCount(String section, String[] sections, String category, String custName, String keyword){
     	Criteria crit = sessionFactory.getCurrentSession().createCriteria(Customer.class);
-    	if(!StringUtils.isEmpty(section)){
-    		crit.add(Restrictions.eq("section", section));
+    	if(sections != null && sections.length > 0){
+    		if(!StringUtils.isEmpty(section)){
+        		crit.add(Restrictions.eq("section", section));
+        	}else {
+        		crit.add(Restrictions.in("section", sections));
+        	}
+    	}else{
+    		crit.add(Restrictions.eq("section", "N"));
     	}
     	if(!StringUtils.isEmpty(category)){
     		crit.add(Restrictions.like("category", category));
@@ -67,9 +73,15 @@ public class CustomerDAO extends RootDAO {
      * 分頁查詢
      * @return
      */
-    public List<Customer> queryForPage(String section, String category, String custName, String keyword, int first, int pageSize){
+    public List<Customer> queryForPage(String section, String[] sections, String category, String custName, String keyword, int first, int pageSize){
     	String hql = "from Customer where 1=1 ";
-    	if(!StringUtils.isEmpty(section)){
+    	if(sections != null && sections.length > 0){
+    		if(!StringUtils.isEmpty(section)){
+        		hql += "and section = :section ";
+        	}else {
+        		hql += "and section in (:sections) ";
+        	}
+    	}else{
     		hql += "and section = :section ";
     	}
     	if(!StringUtils.isEmpty(category)){
@@ -81,11 +93,18 @@ public class CustomerDAO extends RootDAO {
     	if(!StringUtils.isEmpty(keyword)){
     		hql += "and keywords like :keywords ";
     	}
+    	hql += "order by createDate desc ";
     	
         Query query = sessionFactory.getCurrentSession().createQuery(hql);
-        if(!StringUtils.isEmpty(section)){
-        	query.setParameter("section", section);
-    	}
+        if(sections != null && sections.length > 0){
+        	if(!StringUtils.isEmpty(section)){
+            	query.setParameter("section", section);
+        	}else {
+        		query.setParameterList("sections", sections);
+        	}
+        }else{
+        	query.setParameter("section", "N");
+        }
     	if(!StringUtils.isEmpty(category)){
     		query.setParameter("category", category);
     	}

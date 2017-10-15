@@ -1,5 +1,6 @@
 package com.web.dao;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -33,7 +34,7 @@ public class SoundDAO extends RootDAO {
      * 查詢所有筆數
      * @return
      */
-    public int getAllRowCount(String shYear, String shMon, String shArea, String shCust, String shTitle, String shSection, 
+    public int getAllRowCount(String shYear, String shMon, String shArea, String shCust, String shTitle, String shSection, String[] voices,
 										Integer shSecond, String shTone, String shRole, String shSkill){
     	Criteria crit = sessionFactory.getCurrentSession().createCriteria(Sound.class);
     	if(!StringUtils.isEmpty(shYear)){
@@ -51,8 +52,14 @@ public class SoundDAO extends RootDAO {
     	if(!StringUtils.isEmpty(shTitle)){
     		crit.add(Restrictions.eq("title", shTitle));
     	}
-    	if(!StringUtils.isEmpty(shSection)){
-    		crit.add(Restrictions.eq("section", shSection));
+    	if(voices != null && voices.length > 0){
+    		if(!StringUtils.isEmpty(shSection)){
+        		crit.add(Restrictions.eq("section", shSection));
+        	}else {
+        		crit.add(Restrictions.in("section", voices));
+        	}
+    	}else{
+    		crit.add(Restrictions.eq("section", "N"));
     	}
     	if(shSecond != null){
     		crit.add(Restrictions.eq("second", shSecond));
@@ -74,7 +81,7 @@ public class SoundDAO extends RootDAO {
      * 分頁查詢
      * @return
      */
-    public List<Sound> queryForPage(String shYear, String shMon, String shArea, String shCust, String shTitle, String shSection, 
+    public List<Sound> queryForPage(String shYear, String shMon, String shArea, String shCust, String shTitle, String shSection, String[] voices,
 									Integer shSecond, String shTone, String shRole, String shSkill, int first, int pageSize){
     	String hql = "from Sound where 1=1 ";
     	if(!StringUtils.isEmpty(shYear)){
@@ -92,7 +99,13 @@ public class SoundDAO extends RootDAO {
     	if(!StringUtils.isEmpty(shTitle)){
     		hql += "and title = :title ";
     	}
-    	if(!StringUtils.isEmpty(shSection)){
+    	if(voices != null && voices.length > 0){
+    		if(!StringUtils.isEmpty(shSection)){
+        		hql += "and section = :section ";
+        	}else {
+        		hql += "and section in (:voices)";
+        	}
+    	}else{
     		hql += "and section = :section ";
     	}
     	if(shSecond != null){
@@ -125,8 +138,14 @@ public class SoundDAO extends RootDAO {
     	if(!StringUtils.isEmpty(shTitle)){
     		query.setParameter("title", "%"+shTitle+"%");
     	}
-    	if(!StringUtils.isEmpty(shSection)){
-    		query.setParameter("section", shSection);
+    	if(voices != null && voices.length > 0){
+    		if(!StringUtils.isEmpty(shSection)){
+        		query.setParameter("section", shSection);
+        	}else {
+        		query.setParameterList("voices", voices);
+        	}
+    	}else{
+    		query.setParameter("section", "N");
     	}
     	if(shSecond != null){
     		query.setParameter("second", shSecond);
@@ -144,5 +163,19 @@ public class SoundDAO extends RootDAO {
         query.setMaxResults(pageSize);
         List<Sound> list = query.list();
         return list;
+    }
+    
+    
+    /**
+     * 
+     * @param startDate
+     * @param endDate
+     */
+    public List<Object[]> queryGroupBySec(Date startDate, Date endDate){
+    	String sql = "select section, COUNT(*) from sound where create_date >= :sDate and create_date <= :eDate group by section order by section";
+    	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
+    	query.setParameter("sDate", startDate);
+    	query.setParameter("eDate", endDate);
+    	return query.list();
     }
 }

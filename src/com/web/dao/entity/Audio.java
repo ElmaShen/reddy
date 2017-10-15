@@ -28,7 +28,7 @@ public class Audio implements java.io.Serializable {
 	private String gname;
 	private String filePath;
 	private String fileName;
-	private String batch;
+	private String ftype;
 	private String creator;
 	private Date createDate;
 	
@@ -39,14 +39,14 @@ public class Audio implements java.io.Serializable {
 	}
 
 	public Audio(long id, String keywords, int gno, String gname, String filePath,
-			String fileName, String batch, String creator, Date createDate) {
+			String fileName, String ftype, String creator, Date createDate) {
 		this.id = id;
 		this.keywords = keywords;
 		this.gno = gno;
 		this.gname = gname;
 		this.filePath = filePath;
 		this.fileName = fileName;
-		this.batch = batch;
+		this.ftype = ftype;
 		this.creator = creator;
 		this.createDate = createDate;
 	}
@@ -102,12 +102,12 @@ public class Audio implements java.io.Serializable {
 		this.fileName = fileName;
 	}
 
-	@Column(name = "batch", nullable = false, length = 1)
-	public String getBatch() {
-		return batch;
+	@Column(name = "ftype", nullable = false, length = 1)
+	public String getFtype() {
+		return ftype;
 	}
-	public void setBatch(String batch) {
-		this.batch = batch;
+	public void setFtype(String ftype) {
+		this.ftype = ftype;
 	}
 
 	@Column(name = "creator", nullable = false, length = 20)

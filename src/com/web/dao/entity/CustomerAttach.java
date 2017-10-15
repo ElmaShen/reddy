@@ -47,7 +47,7 @@ public class CustomerAttach implements java.io.Serializable {
 		this.id = id;
 	}
 	
-	@Column(name = "type", nullable = false, length = 1)
+	@Column(name = "type", length = 1)
 	public String getType() {
 		return type;
 	}
