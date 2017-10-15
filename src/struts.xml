@@ -81,9 +81,6 @@
 			    <param name="actionName">soundList</param>   
 			</result>
         </action>
-	   <action name="batchUpload" class="com.web.action.SoundAction" method="batchUpload">
-			<result type="json" />
-        </action>
 	</package>
 	
 	<package name="c" namespace="/" extends="audio-default">
@@ -102,7 +99,12 @@
         <action name="categoryCombo" class="com.web.action.CustomerAction" method="categoryCombo">
             <result name="success" type="json"> <param name="root">jsonStr</param></result>
         </action>
-        <action name="download" class="com.web.action.CustomerAction" method="download">
+        
+        <action name="onlineReadDoc" class="com.web.action.CustomerAction" method="onlineReadDoc">
+			<result name="success" type="stream">
+			</result>
+	   	</action>
+        <action name="downloadCust" class="com.web.action.CustomerAction" method="downloadCust">
 			<result name="success" type="stream">
 				<param name="contentType">application/octet-stream</param>
 				<param name="inputName">fileInputStream</param>
@@ -157,16 +159,25 @@
 			    <param name="actionName">photoList</param>   
 			</result>
         </action>
+        <action name="queryByGno" class="com.web.action.PhotoAction" method="queryByGno">
+			<result type="json" />
+        </action>
 	</package>
 	
 	<package name="e" namespace="/" extends="audio-default">
 		<action name="charts" class="com.web.action.ChartsAction" method="charts">
 			<result name="success" type="dispatcher">/charts.jsp</result>
         </action>
+        <action name="chartsReport" class="com.web.action.ChartsAction" method="chartsReport">
+			<result type="json" />
+        </action>
 	</package>
 	
 	<package name="f" namespace="/" extends="audio-default">
 		<action name="account" class="com.web.action.AccountAction" method="account">
+			<result name="success" type="dispatcher">/account.jsp</result>
+        </action>
+        <action name="accountList" class="com.web.action.AccountAction" method="accountList">
 			<result name="success" type="dispatcher">/account.jsp</result>
         </action>
         <action name="querySections" class="com.web.action.AccountAction" method="querySections">
@@ -178,8 +189,11 @@
         <action name="editAccount" class="com.web.action.AccountAction" method="editAccount">
 			<result type="json" />
         </action>
-        <action name="accountList" class="com.web.action.AccountAction" method="accountList">
-			<result name="success" type="dispatcher">/account.jsp</result>
+        <action name="deleteAccount" class="com.web.action.AccountAction" method="deleteAccount">
+			<result name="success" type="redirectAction">   
+            	<param name="namespace">/</param>   
+			    <param name="actionName">accountList</param>   
+			</result>
         </action>
 	</package>
 	
@@ -203,6 +217,24 @@
 			<result type="json" />
         </action>
         <action name="editAttribute" class="com.web.action.AttributeAction" method="editAttribute">
+			<result type="json" />
+        </action>
+        <action name="deleteAttribute" class="com.web.action.AttributeAction" method="deleteAttribute">
+			<result name="success" type="redirectAction">   
+            	<param name="namespace">/</param>   
+			    <param name="actionName">attributeList</param>   
+			</result>
+        </action>
+	</package>
+	
+	<package name="i" namespace="/" extends="audio-default">
+		<action name="batchUpload" class="com.web.action.BatchUploadAction" method="batchUpload">
+			<result name="success" type="dispatcher">/batch_upload.jsp</result>
+        </action>
+	   	<action name="startBatch" class="com.web.action.BatchUploadAction" method="startBatch">
+			<result type="json" />
+        </action>
+        <action name="customerBatch" class="com.web.action.BatchUploadAction" method="customerBatch">
 			<result type="json" />
         </action>
 	</package>
