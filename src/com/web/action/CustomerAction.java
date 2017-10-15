@@ -1,9 +1,14 @@
 package com.web.action;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ConnectException;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,6 +20,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.apache.struts2.interceptor.ServletResponseAware;
 
+import com.artofsolving.jodconverter.DocumentConverter;
+import com.artofsolving.jodconverter.openoffice.connection.OpenOfficeConnection;
+import com.artofsolving.jodconverter.openoffice.connection.SocketOpenOfficeConnection;
+import com.artofsolving.jodconverter.openoffice.converter.OpenOfficeDocumentConverter;
 import com.util.ZipUtils;
 import com.web.dao.entity.Account;
 import com.web.dao.entity.Attribute;
@@ -105,18 +114,27 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 	public String customerList() {
 		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
 		funcs = this.systemService.queryFuncByAuths(user.getAccount());
-		
+		//個案 產業類別
+		String[] ary = null;
+		if(user.getAuthority() != null && user.getAuthority().containsKey("F02")) {
+			Authority au = user.getAuthority().get("F02");
+			if(au.getSection() != null) {
+				ary = au.getSection().split(",");
+			}
+		}
+				
 		if(page == null || page == 0){
 			page = 1;
 		}
 		pageSize = Integer.parseInt(loadConfig("page.size"));
-		pageBean = this.customerService.queryCustomerByPage(shSection, shCategory, shCust, shKeyword, pageSize, page);
+		pageBean = this.customerService.queryCustomerByPage(shSection, ary, shCategory, shCust, shKeyword, pageSize, page);
 		for(int idx=0; idx<pageBean.getList().size(); idx++){
 			Customer c = (Customer)pageBean.getList().get(idx);
-			
-			Attribute atr = this.systemService.queryAttributesByKey(AttributeType.category.name(), c.getCategory(), c.getSection());
 			c.setSectionName(this.sectionCombo().get(c.getSection()));
-			c.setCategoryName(atr.getAttrName());
+			if(StringUtils.isNotEmpty(c.getCategory())){
+				Attribute atr = this.systemService.queryAttributesByKey(AttributeType.category.name(), c.getCategory(), c.getSection());
+				c.setCategoryName(atr.getAttrName());
+			}
 		}
 		return SUCCESS;
 	}
@@ -128,9 +146,11 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 	public String queryCustomer(){
 		customer = this.customerService.queryCustomerById(id);
 		if(customer != null && !StringUtils.isEmpty(flag)){
-			Attribute atr = this.systemService.queryAttributesByKey(AttributeType.category.name(), customer.getCategory(), customer.getSection());
-			customer.setSectionName(this.sectionCombo().get(customer.getSection()));
-			customer.setCategoryName(atr.getAttrName());
+			if(StringUtils.isNotEmpty(customer.getCategory())){
+				Attribute atr = this.systemService.queryAttributesByKey(AttributeType.category.name(), customer.getCategory(), customer.getSection());
+				customer.setSectionName(this.sectionCombo().get(customer.getSection()));
+				customer.setCategoryName(atr.getAttrName());
+			}
 			
 			List<CustomerAttach> achs = this.customerService.queryCustomerAttachByCustId(customer.getId());
 			if(achs != null){
@@ -151,7 +171,10 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 		}
 		
 		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
+		String type = "";
 		if(customer.getId() == 0){
+			type = "新增";
+			
 			String custNo = this.customerService.queryMaxCustomerNo();
 			int lastNo = Integer.parseInt(custNo.substring(1))+1;
 			customer.setCustNo("C" + String.format("%07d", lastNo));
@@ -160,6 +183,8 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 			customer.setCreateDate(new Date());
 			this.customerService.updateCustomer(customer);
 		}else{
+			type = "編輯";
+			
 			Customer cust = this.customerService.queryCustomerById(customer.getId());
 			if(cust != null){
 				cust.setSection(customer.getSection());
@@ -173,26 +198,29 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 		String path = loadConfig("upload.path") + loadConfig("upload.cust.path");
 		Map<String, String> map = this.sectionCombo();
 		String secName = map.get(customer.getSection());
-		path = path + secName + "\\" + secName + "-" + customer.getCustName() + "\\";
+		path += "\\" + secName + "-" + customer.getCustName() + "\\";
+		StringBuffer buf = new StringBuffer();
 		if(aupload != null){
-			uploadFile(path, "A-提案", aupload, auploadFileName, auploadContentType);
+			uploadFile(path, "A.提案", aupload, auploadFileName, auploadContentType, buf);
 		}
 		if(bupload != null){
-			uploadFile(path, "B-文案", bupload, buploadFileName, buploadContentType);
+			uploadFile(path, "B.文案", bupload, buploadFileName, buploadContentType, buf);
 		}
 		if(cupload != null){
-			uploadFile(path, "C-素材", cupload, cuploadFileName, cuploadContentType);
+			uploadFile(path, "C.素材", cupload, cuploadFileName, cuploadContentType, buf);
 		}
 		if(dupload != null){
-			uploadFile(path, "D-其他", dupload, duploadFileName, duploadContentType);
+			uploadFile(path, "D.其他", dupload, duploadFileName, duploadContentType, buf);
 		}
+		
+		this.systemService.updateSysRecord(user, "個案管理【"+type+"】", path + buf.toString());
 		success = "Y";
 		message = "設定成功";
 		return SUCCESS;
 	}
 	
 	
-	private void uploadFile(String path, String type, File[] upload, String[] uploadFileName, String[] uploadContentType){
+	private void uploadFile(String path, String type, File[] upload, String[] uploadFileName, String[] uploadContentType, StringBuffer buf){
 		try{
 			path += type + "\\";
 			File des = new File(path);
@@ -220,6 +248,8 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 				ach.setFileName(uploadFileName[idx]);
 				ach.setCustId(customer.getId());
 				this.customerService.updateCustomerAttach(ach);
+				
+				buf.append(uploadFileName[idx]).append(",");
 			}
 		}catch (Exception e) {
 			throw new RuntimeException(e.getMessage(), e);
@@ -227,13 +257,108 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 	}
 	
 	
+	/**
+	 * 線上閱覽
+	 * @return
+	 */
+	public String onlineReadDoc() {
+		try {
+			CustomerAttach ach = this.customerService.queryCustomerAttachById(id);
+			if(ach != null){
+				String path = ach.getFilePath();
+				String fname = ach.getFileName();
+				
+				String tmp = fname.split("\\.")[1];
+				if(!tmp.equals("pdf") && !tmp.equals("PDF")){
+					int result = office2PDF(path, fname);
+					if(result != -1){
+						path = this.loadConfig("online.read.path");
+						fname = fname.split("\\.")[0] + ".pdf";
+					}
+				}
+				
+				response.setContentType("application/pdf;charset=UTF-8");  
+				response.setHeader("Content-Disposition","inline; filename="+fname+"");
+				
+				File file = new File(path + fname);
+				BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+				OutputStream responseOut = response.getOutputStream();
+
+				int bytesRead = 0;
+				byte[] buffer = new byte[1024];
+				while ((bytesRead = bis.read(buffer)) != -1) {
+					responseOut.write(buffer, 0, bytesRead);
+				}
+				bis.close();
+				responseOut.close();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	/**
+	 * document to pdf
+	 * @param path
+	 * @param sourceFile
+	 * @param destFile
+	 * @return
+	 */
+	private int office2PDF(String path, String sourceFile) {  
+        try {  
+            File inputFile = new File(path + sourceFile);  
+            if (!inputFile.exists()) {  
+                return -1;
+            }  
+  
+            String onPath = this.loadConfig("online.read.path");
+            String destFile = sourceFile.split("\\.")[0] + ".pdf";
+            File outputFile = new File(onPath + destFile);  
+            if (!outputFile.getParentFile().exists()) {  
+                outputFile.getParentFile().mkdirs();  
+            }  
+  
+            // OpenOffice的安裝目錄
+            String OpenOffice_HOME = this.loadConfig("openoffice.path");  
+            if (OpenOffice_HOME.charAt(OpenOffice_HOME.length() - 1) != '\\') {  
+                OpenOffice_HOME += "\\";  
+            }  
+            // 啟動OpenOffice的服務
+            String command = OpenOffice_HOME + "soffice.exe -headless -accept=\"socket,host=127.0.0.1,port=8100;urp;\"";  
+            Process pro = Runtime.getRuntime().exec(command);  
+            OpenOfficeConnection connection = new SocketOpenOfficeConnection("127.0.0.1", 8100);  
+            connection.connect();  
+            // convert  
+            DocumentConverter converter = new OpenOfficeDocumentConverter(connection);  
+            converter.convert(inputFile, outputFile);  
+  
+            // close the connection  
+            connection.disconnect();  
+            pro.destroy();  
+  
+            return 0;  
+        } catch (FileNotFoundException e) {  
+            e.printStackTrace();  
+            return -1;  
+        } catch (ConnectException e) {  
+            e.printStackTrace();  
+        } catch (IOException e) {  
+            e.printStackTrace();  
+        }  
+  
+        return 1;  
+    }  
+	
 	
 	/**
 	 * 下載
 	 * @return
 	 */
-	public String download() {
+	public String downloadCust() {
 		try {
+			Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
+			
 			CustomerAttach ach = this.customerService.queryCustomerAttachById(id);
 			if(ach != null){
 				String userAgent = request.getHeader("User-Agent");
@@ -245,6 +370,8 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 				
 				String filePath = ach.getFilePath() + ach.getFileName();
 				fileInputStream = new FileInputStream(new File(filePath));
+				
+				this.systemService.updateSysRecord(user, "個案管理【下載】", filePath);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -258,6 +385,9 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 	 * @return
 	 */
 	public String downloadAll() {
+		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
+		this.systemService.updateSysRecord(user, "個案管理【整批下載】", "");
+		
 		String zipName = "files.zip";
 		List<CustomerAttach> list = this.customerService.queryCustomerAttachByCustId(id);
 		if(list != null && list.size() > 0){
@@ -295,22 +425,28 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 		File df = new File(path);
 		df.delete();
 		
+		this.systemService.updateSysRecord(user, "個案管理【刪除客戶】", c.getCustName());
 		return SUCCESS;
 	}
 	
 	
 	/**
-	 * 刪除客戶
+	 * 刪除文件
 	 * @return
 	 */
 	public String deleteDocument(){
+		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
+		
 		CustomerAttach ach = this.customerService.queryCustomerAttachById(attrId);
 		if(ach != null){
 			this.customerService.deleteCustomerAttach(ach);
 			
-			File df = new File(ach.getFilePath()+ach.getFileName());
+			String filePath = ach.getFilePath()+ach.getFileName();
+			File df = new File(filePath);
 			df.delete();
 			success = "Y";
+			
+			this.systemService.updateSysRecord(user, "個案管理【刪除文件】", filePath);
 		}
 		return SUCCESS;
 	}

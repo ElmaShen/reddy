@@ -1,5 +1,6 @@
 package com.web.action;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -11,6 +12,7 @@ import com.web.dao.entity.Account;
 import com.web.dao.entity.Attribute;
 import com.web.dao.entity.Authority;
 import com.web.dao.entity.Func;
+import com.web.dao.entity.Sound;
 import com.web.dao.model.AttributeType;
 import com.web.dao.model.PageBean;
 import com.web.service.SystemService;
@@ -140,14 +142,19 @@ public class AccountAction extends BaseActionSupport implements ServletRequestAw
 			message = "帳號:" +account.getAccount()+ "已存在,請重新設定";
 			success = "N";
 		}else{
+			Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
+			String type = "";
 			long accId = 0;
 			if(account.getId() == 0){
-				Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
+				type = "新增";
+				
 				account.setCreator(user.getAccount());
 				account.setCreateDate(new Date());
 				this.systemService.updateAccount(account);
 				accId = account.getId();
 			}else{
+				type = "編輯";
+				
 				Account ac = this.systemService.queryAccountById(account.getId());
 				ac.setAccount(account.getAccount());
 				ac.setName(account.getName());
@@ -179,6 +186,7 @@ public class AccountAction extends BaseActionSupport implements ServletRequestAw
 				auth.setCreateDate(new Date());
 				this.systemService.updateAuthority(auth);
 			}
+			this.systemService.updateSysRecord(user, "帳號管理【"+type+"】：", account.getAccount());
 			
 			message = "編輯成功";
 			success = "Y";
@@ -187,6 +195,19 @@ public class AccountAction extends BaseActionSupport implements ServletRequestAw
 	}
 	
 	
+	/**
+	 * 刪除
+	 * @return
+	 */
+	public String deleteAccount(){
+		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
+		funcs = this.systemService.queryFuncByAuths(user.getAccount());
+		
+		Account acc = this.systemService.queryAccountById(id);
+		this.systemService.deleteAccount(acc);
+		this.systemService.updateSysRecord(user, "帳號管理【刪除】", acc.getAccount());
+		return SUCCESS;
+	}
 	
 	
 	private String loadConfig(String param) {

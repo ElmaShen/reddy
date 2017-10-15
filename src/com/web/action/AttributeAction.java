@@ -10,14 +10,10 @@ import org.apache.struts2.interceptor.ServletRequestAware;
 
 import com.web.dao.entity.Account;
 import com.web.dao.entity.Attribute;
-import com.web.dao.entity.Authority;
 import com.web.dao.entity.Func;
 import com.web.dao.model.AttributeType;
 import com.web.dao.model.PageBean;
 import com.web.service.SystemService;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class AttributeAction extends BaseActionSupport implements ServletRequestAware {
 	/**
@@ -95,7 +91,11 @@ public class AttributeAction extends BaseActionSupport implements ServletRequest
 			return SUCCESS;
 		}
 		
+		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
+		String type = "";
 		if(attribute.getId() == 0){
+			type = "新增";
+			
 			Attribute attr = this.systemService.queryAttributesByKey(attribute.getType(), attribute.getAttrKey(), attribute.getParentKey());
 			if(attr != null){
 				success = "N";
@@ -103,11 +103,12 @@ public class AttributeAction extends BaseActionSupport implements ServletRequest
 				return SUCCESS;
 			}
 			
-			Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
 			attribute.setCreator(user.getAccount());
 			attribute.setCreateDate(new Date());
 			this.systemService.updateAttribute(attribute);
 		}else{
+			type = "編輯";
+			
 			Attribute attr = this.systemService.queryAttributeById(attribute.getId());
 			if(attr != null){
 				attr.setType(attribute.getType());
@@ -118,11 +119,28 @@ public class AttributeAction extends BaseActionSupport implements ServletRequest
 				this.systemService.updateAttribute(attr);
 			}
 		}
+		
+		this.systemService.updateSysRecord(user, "屬性設定【"+type+"】：", attribute.getAttrKey() + "-" + attribute.getAttrName());
 		success = "Y";
 		message = "設定成功";
 		return SUCCESS;
 	}
 
+	
+	/**
+	 * 刪除
+	 * @return
+	 */
+	public String deleteAttribute(){
+		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
+		funcs = this.systemService.queryFuncByAuths(user.getAccount());
+		
+		Attribute attr = this.systemService.queryAttributeById(id);
+		this.systemService.deleteAttribute(attr);
+		this.systemService.updateSysRecord(user, "屬性設定【刪除】", attr.getAttrKey() + "-" + attr.getAttrName());
+		return SUCCESS;
+	}
+	
 
 	/**
 	 * 屬性

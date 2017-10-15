@@ -2,13 +2,11 @@ package com.web.action;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.apache.commons.lang.StringUtils;
@@ -16,10 +14,7 @@ import org.apache.struts2.interceptor.ServletRequestAware;
 
 import com.web.dao.entity.Account;
 import com.web.dao.entity.Audio;
-import com.web.dao.entity.Customer;
-import com.web.dao.entity.CustomerAttach;
 import com.web.dao.entity.Func;
-import com.web.dao.entity.Sound;
 import com.web.dao.model.PageBean;
 import com.web.service.AudioManageService;
 import com.web.service.SystemService;
@@ -39,6 +34,7 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 	private List<Func> funcs;
 	
 	private long id;
+	private int gno;
 	private String shKeywords;
 	private String shGname;
 	private Integer page; // 頁數
@@ -46,6 +42,7 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 	private PageBean pageBean;
 	
 	private Audio audio;
+	private List<Audio> alist;
 	private File[] upload;   
     private String[] uploadFileName;   
     private String[] uploadContentType; 
@@ -118,15 +115,22 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 			des.mkdirs();
 		}
 		
+		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
+		StringBuffer buf = new StringBuffer();
+		String type = "";
 		int gno = 0;
 		if(audio.getId() == 0){
+			type = "新增";
+			
 			if(StringUtils.isNotEmpty(audio.getGname())){
 				//path += audio.getGname() + "\\";
 				gno = (int)Math.round(Math.random()*100000);
 			}
 			
-			this.uploadFile(path, gno);
+			this.uploadFile(user, path, gno, buf);
 		}else{
+			type = "編輯";
+			
 			Audio au = this.audioManageService.queryAudioById(audio.getId());
 			if(au.getGno() == 0 && StringUtils.isNotEmpty(audio.getGname())){
 				gno = (int)Math.round(Math.random()*100000);
@@ -147,15 +151,15 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 				}
 			}
 			
-			this.uploadFile(path, gno);
+			this.uploadFile(user, path, gno, buf);
 		}
+		
+		this.systemService.updateSysRecord(user, "照片及影片管理【"+type+"】：", path + "<br>" + buf.toString());
 		return SUCCESS;
 	}
 	
 	
-	private void uploadFile(String path, int gno){
-		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
-		
+	private void uploadFile(Account user, String path, int gno, StringBuffer buf){
 		try {
 			if(upload != null){
 				for(int idx=0; idx<upload.length; idx++){
@@ -178,10 +182,12 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 					a.setGname(audio.getGname());
 					a.setFilePath(path);
 					a.setFileName(uploadFileName[idx]);
-					a.setBatch("N");
+					a.setFtype(audio.getFtype());
 					a.setCreator(user.getAccount());
 					a.setCreateDate(new Date());
 					this.audioManageService.updateAudio(a);
+					
+					buf.append(uploadFileName[idx]).append("<br>");
 				}
 			}
 		} catch (IOException e) {
@@ -194,6 +200,7 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 	 * @return
 	 */
 	public String downloadPhoto() {
+		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
 		try {
 			Audio a = this.audioManageService.queryAudioById(id);
 			if(a != null){
@@ -206,6 +213,8 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 				
 				String filePath = a.getFilePath() + a.getFileName();
 				fileInputStream = new FileInputStream(new File(filePath));
+				
+				this.systemService.updateSysRecord(user, "照片及影片管理【下載】：", filePath);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -219,11 +228,31 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 	 * @return
 	 */
 	public String deletePhoto(){
+		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
 		Audio a = this.audioManageService.queryAudioById(id);
 		this.audioManageService.deleteAudio(a);
 		
-		File f = new File(a.getFilePath()+a.getFileName());
+		String filePath = a.getFilePath()+a.getFileName();
+		File f = new File(filePath);
 		f.delete();
+		
+		this.systemService.updateSysRecord(user, "照片及影片管理【刪除】：", filePath);
+		return SUCCESS;
+	}
+	
+	
+	/**
+	 * 查詢群組相片
+	 * @return
+	 */
+	public String queryByGno(){
+		alist = this.audioManageService.queryAudioByGno(gno);
+		for (Audio a : alist) {
+			String serverPath = this.loadConfig("server.path");
+			String root = this.loadConfig("upload.path");
+			String uri = serverPath + (a.getFilePath().replace(root, "")+a.getFileName()).replace("\\", "/");
+			a.setFileUri(uri);
+		}
 		return SUCCESS;
 	}
 
@@ -258,6 +287,12 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 	}
 	public void setId(long id) {
 		this.id = id;
+	}
+	public int getGno() {
+		return gno;
+	}
+	public void setGno(int gno) {
+		this.gno = gno;
 	}
 	public String getShKeywords() {
 		return shKeywords;
@@ -294,6 +329,12 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 	}
 	public void setAudio(Audio audio) {
 		this.audio = audio;
+	}
+	public List<Audio> getAlist() {
+		return alist;
+	}
+	public void setAlist(List<Audio> alist) {
+		this.alist = alist;
 	}
 	public File[] getUpload() {
 		return upload;

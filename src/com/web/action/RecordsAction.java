@@ -46,6 +46,8 @@ public class RecordsAction extends BaseActionSupport implements ServletRequestAw
 	public String records(){
 		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
 		funcs = this.systemService.queryFuncByAuths(user.getAccount());
+		
+		this.systemService.updateSysRecord(user, "操作記錄【查詢】：", "");
 		return SUCCESS;
 	}
 	

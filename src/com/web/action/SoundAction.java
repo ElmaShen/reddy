@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -92,12 +91,20 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 	public String soundList() {
 		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
 		funcs = this.systemService.queryFuncByAuths(user.getAccount());
+		//音檔 產業類別
+		String[] ary = null;
+		if(user.getAuthority() != null && user.getAuthority().containsKey("F01")) {
+			Authority au = user.getAuthority().get("F01");
+			if(au.getVoice() != null) {
+				ary = au.getVoice().split(",");
+			}
+		}
 		
 		if(page == null || page == 0){
 			page = 1;
 		}
 		pageSize = Integer.parseInt(loadConfig("page.size"));
-		pageBean = this.audioManageService.querySoundByPage(shYear, shMon, shArea, shCust, shTitle, shSection, shSecond, shTone, 
+		pageBean = this.audioManageService.querySoundByPage(shYear, shMon, shArea, shCust, shTitle, shSection, ary, shSecond, shTone, 
 																	shRole, shSkill, pageSize, page);
 		for(int idx=0; idx<pageBean.getList().size(); idx++){
 			Sound s = (Sound)pageBean.getList().get(idx);
@@ -120,6 +127,9 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 	 */
 	public String querySound(){
 		sound = this.audioManageService.querySoundById(id);
+		sound.setSectionName(this.voiceCombo().get(sound.getSection()));
+		sound.setToneName(this.toneCombo().get(sound.getTone()));
+		sound.setSkillName(this.skillCombo().get(sound.getSkill()));
 		return SUCCESS;
 	}
 	
@@ -134,8 +144,9 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 			return SUCCESS;
 		}
 		
+		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
+		Sound s = null;
 		if(sound.getId() == 0){
-			Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
 			String path = loadConfig("upload.path") + loadConfig("upload.sound.path");
 			Attribute attr = this.systemService.queryAttributesByKey(AttributeType.voice.name(), sound.getSection(), null);
 			try{
@@ -146,6 +157,7 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 						des.mkdirs();
 					}
 					
+					StringBuffer buf = new StringBuffer();
 					for(int idx=0; idx<upload.length; idx++){
 						String savePath = path + uploadFileName[idx];
 						
@@ -161,22 +173,37 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 						fis.close();
 						
 						//insert sound table
-						sound.setFilePath(path);
-						sound.setFileName(uploadFileName[idx]);
-						sound.setBatch("N");
-						sound.setCreator(user.getAccount());
-						sound.setCreateDate(new Date());
-						this.audioManageService.updateSound(sound);
+						s = new Sound();
+						s.setFilePath(path);
+						s.setFileName(uploadFileName[idx]);
+						s.setBatch("N");
+						s.setCreator(user.getAccount());
+						s.setCreateDate(new Date());
+						s.setYear(sound.getYear());
+						s.setMonth(sound.getMonth());
+						s.setCustName(sound.getCustName());
+						s.setTitle(sound.getTitle());
+						s.setArea(sound.getArea());
+						s.setSecond(sound.getSecond());
+						s.setSection(sound.getSection());
+						s.setRole(sound.getRole());
+						s.setSkill(sound.getSkill());
+						s.setTone(sound.getTone());
+						this.audioManageService.updateSound(s);
+						
+						buf.append(uploadFileName[idx]).append(",");
 					}
+					this.systemService.updateSysRecord(user, "音檔管理【新增】", path + buf.toString());
 				}
 			}catch (Exception e) {
 				throw new RuntimeException(e.getMessage(), e);
 			}
 		}else{
-			Sound s = this.audioManageService.querySoundById(sound.getId());
+			s = this.audioManageService.querySoundById(sound.getId());
 			s.setYear(sound.getYear());
 			s.setMonth(sound.getMonth());
 			s.setCustName(sound.getCustName());
+			s.setTitle(sound.getTitle());
 			s.setArea(sound.getArea());
 			s.setSecond(sound.getSecond());
 			s.setSection(sound.getSection());
@@ -184,7 +211,9 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 			s.setSkill(sound.getSkill());
 			s.setTone(sound.getTone());
 			this.audioManageService.updateSound(s);
+			this.systemService.updateSysRecord(user, "音檔管理【編輯】", s.getFilePath() + s.getFileName());
 		}
+		
 		success = "Y";
 		message = "編輯成功";
 		return SUCCESS;
@@ -197,6 +226,8 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 	 */
 	public String downloadSound() {
 		try {
+			Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
+			
 			Sound s = this.audioManageService.querySoundById(id);
 			if(s != null){
 				String userAgent = request.getHeader("User-Agent");
@@ -208,6 +239,8 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 				
 				String filePath = s.getFilePath() + s.getFileName();
 				fileInputStream = new FileInputStream(new File(filePath));
+				
+				this.systemService.updateSysRecord(user, "音檔管理【下載】", filePath);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -227,198 +260,14 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 		Sound s = this.audioManageService.querySoundById(id);
 		this.audioManageService.deleteSound(s);
 		
-		File df = new File(s.getFilePath()+s.getFileName());
+		String filePath = s.getFilePath()+s.getFileName();
+		File df = new File(filePath);
 		df.delete();
-		return SUCCESS;
-	}
-	
-	
-	/**
-	 * 批次轉檔
-	 * @return
-	 */
-	public String batchUpload() {
-		try {
-			Date start = new Date();
-			File source = new File(batchPath);
-			if (!source.exists()) {
-				success = "N";
-				message = "系統無您所指定的路徑";
-				return SUCCESS;
-			}
-			
-			String target = loadConfig("upload.path") + loadConfig("upload.sound.path");
-			slist = new ArrayList<String>();
-			flist = new ArrayList<String>();
-			copyFolder(batchPath, target);
-			
-			Date end = new Date();
-			long time = end.getTime() - start.getTime();
-			totTime = millisToHMS(time);
-		}catch(Exception e) {
-			e.printStackTrace();
-		}
-		return SUCCESS;
-	}
-
-	
-	private void copyFolder(String oldPath, String newPath) {
-		try{
-			File a = new File(oldPath);
-			String[] file = a.list();
-			if(file != null){
-				File temp = null;
-				int cnt = 0;
-				for (int i = 0; i < file.length; i++) {
-					if(oldPath.endsWith(File.separator)){
-						temp = new File(oldPath+file[i]);
-					}else{
-						temp = new File(oldPath + File.separator + file[i]);
-					}
-					 
-					if(temp.isFile()){
-						String fName = temp.getName().toString();
-						boolean isOk = this.checkFileFormat(newPath, fName, cnt);
-						if(isOk){
-							slist.add(fName);
-							//建立目錄
-							if(cnt == 0){
-								Map<String, String> map = this.voiceCombo();
-								String[] fn = fName.split("\\.");
-								newPath += map.get(fn[1]) + "\\" + fn[0]+map.get(fn[1]) + "\\";
-								File folder = new File(newPath);
-								if(!folder.exists()){
-									folder.mkdirs();
-								}
-							}
-							
-							FileInputStream fis = new FileInputStream(temp);
-							FileOutputStream fos = new FileOutputStream(newPath + "/" + fName);
-							byte[] b = new byte[1024];
-							int len;
-							while ((len = fis.read(b)) > 0) {
-								fos.write(b, 0, len);
-							}
-							fos.flush();
-							fos.close();
-							fis.close();
-							
-							//刪除原路徑檔案
-							temp.delete();
-							cnt++;
-						}
-					}
-					//子資料夾
-					if(temp.isDirectory()){
-						copyFolder(oldPath+"\\"+file[i], newPath);
-					}
-				}
-				
-				success = "Y";
-				message = "轉檔完成";
-			}else{
-				success = "N";
-				message = "路徑下無檔案";
-			}
-		}catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	/**
-	 * a.年份.產業類別.客戶.篇名.秒數.調性.角色.手法
-	 * b.年份.產業類別.客戶.秒數.調性.角色.手法
-	 * c.年份.產業類別.客戶.篇名.秒數.調性.手法
-	 * d.年份.產業類別.客戶.秒數.調性.手法
-	 * 
-	 * [篇名]及[角色]不一定有
-	 * 
-	 * @param fileName
-	 * @return
-	 */
-	private boolean checkFileFormat(String path, String fileName, int cnt){
-		boolean isOk = false;
-		String[] str = fileName.split("\\.");
-		if(str != null){
-			if(str.length-1 < 6 || str.length-1 > 8){
-				flist.add(fileName);
-			}else{
-				//檔案格式需為mp3
-				if(!"mp3".equals(str[str.length-1])){
-					flist.add(fileName);
-				}else{
-					String title = "", tone = "", role = "", skill = "";
-					int second = 0;
-					try {
-						if(str[3].indexOf("秒") != -1){
-							second = Integer.parseInt(str[3].substring(0, str[3].indexOf("秒")));
-						}else{
-							title = str[3];
-							if(str[4].indexOf("秒") != -1){
-								second = Integer.parseInt(str[4].substring(0, str[4].indexOf("秒")));
-							}else{
-								tone = str[4];
-							}
-						}
-						if(str.length-1 == 6){
-							skill = str[5];
-						}
-						if(str.length-1 == 7){
-							if(this.toneCombo().containsKey(str[5])){
-								tone = str[5];
-							}else{
-								role = str[5];
-							}
-							skill = str[6];
-						}
-						if(str.length-1 == 8){
-							tone = str[5];
-							role = str[6];
-							skill = str[7];
-						}
-						
-						Map<String, String> map = this.voiceCombo();
-						if(cnt == 0){
-							path += map.get(str[1]) + "\\" + str[0]+map.get(str[1]) + "\\";
-						}
-						Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
-						Sound s = new Sound();
-						s.setYear(str[0]);
-						s.setSection(str[1]);
-						s.setCustName(str[2]);
-						s.setTitle(title);
-						s.setSecond(second);
-						s.setRole(role);
-						s.setSkill(skill);
-						s.setTone(tone);
-						s.setFilePath(path);
-						s.setFileName(fileName);
-						s.setBatch("Y");
-						s.setCreator(user.getAccount());
-						s.setCreateDate(new Date());
-						this.audioManageService.updateSound(s);
-						
-						isOk = true;
-					} catch (Exception e) {
-						flist.add(fileName);
-					}
-				}
-			}
-		}else{
-			flist.add(fileName);
-		}
-		return isOk;
-	}
-	
-	
-	private String millisToHMS(long millis) {
-		long second = (millis / 1000) % 60;
-		long minute = (millis / (1000 * 60)) % 60;
-		long hour = (millis / (1000 * 60 * 60)) % 24;
 		
-		String time = String.format("%02d時%02d分%02d秒", hour, minute, second);
-		return time;
+		this.systemService.updateSysRecord(user, "音檔管理【刪除】", filePath);
+		return SUCCESS;
 	}
+	
 	
 	
 	private String loadConfig(String param) {

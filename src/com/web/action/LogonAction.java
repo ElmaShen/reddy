@@ -8,10 +8,10 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.interceptor.ServletRequestAware;
 
+import com.util.DateUtils;
 import com.web.dao.entity.Account;
 import com.web.dao.entity.Authority;
 import com.web.dao.entity.Func;
-import com.web.dao.entity.SysRecord;
 import com.web.service.SystemService;
 
 public class LogonAction extends BaseActionSupport implements ServletRequestAware {
@@ -66,20 +66,16 @@ public class LogonAction extends BaseActionSupport implements ServletRequestAwar
 				}
 				
 				if(!password.equals(user.getPassword())){
-					message = "登入密碼有誤!";
+					message = "登入密碼錯誤!";
+					this.systemService.updateSysRecord(user, "登入失敗", "密碼錯誤");
 					return "input";
 				}
 				if("N".equals(user.getIsuse())){
 					message = "此帳號目前停止使用!";
+					this.systemService.updateSysRecord(user, "登入失敗", "帳號停用");
 					return "input";
 				}
-				
-				SysRecord sr = new SysRecord();
-				sr.setAccount(user.getAccount());
-				sr.setName(user.getName());
-				sr.setAction("登入成功");
-				sr.setCreateDate(new Date());
-				this.systemService.updateSysRecord(sr);
+				this.systemService.updateSysRecord(user, "登入成功", "");
 			}
 			
 			request.getSession().setAttribute(SESSION_LOGIN_USER, user);
@@ -106,6 +102,10 @@ public class LogonAction extends BaseActionSupport implements ServletRequestAwar
 		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
 		if(user != null){
 			request.getSession().removeAttribute(SESSION_LOGIN_USER);
+			
+			long time = new Date().getTime() - user.getLoginDate().getTime(); 
+			String tStr = DateUtils.millisToHMS(time);
+			this.systemService.updateSysRecord(user, "登出成功", "登入平台共歷時：" + tStr);
 		}
 		return SUCCESS;
 	}
