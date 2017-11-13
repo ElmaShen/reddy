@@ -234,7 +234,7 @@
 	   	<action name="startBatch" class="com.web.action.BatchUploadAction" method="startBatch">
 			<result type="json" />
         </action>
-        <action name="customerBatch" class="com.web.action.BatchUploadAction" method="customerBatch">
+        <action name="deleteAll" class="com.web.action.BatchUploadAction" method="deleteAll">
 			<result type="json" />
         </action>
 	</package>
