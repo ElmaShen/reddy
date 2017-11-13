@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 
@@ -27,6 +28,16 @@ public class AudioDAO extends RootDAO {
 		return (Audio)crit.uniqueResult();
 	}
 	
+	/**
+    * 查詢筆數
+    * @return
+    */
+	 public int queryCount() {
+	     Criteria crit = sessionFactory.getCurrentSession().createCriteria(Audio.class);
+	     crit.setProjection(Projections.rowCount());
+	     return (int)crit.uniqueResult();
+	 }
+		 
 	/**
      * 依群組編號查詢
      * @param gno

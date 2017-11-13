@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
 
@@ -28,6 +29,18 @@ public class SoundDAO extends RootDAO {
 		return (Sound)crit.uniqueResult();
 	}
 	
+	
+	/**
+	    * 查詢筆數
+	    * @param voices
+	    * @return
+	    */
+    public int queryCount(String[] voices) {
+        Criteria crit = sessionFactory.getCurrentSession().createCriteria(Sound.class);
+        crit.add(Restrictions.in("section", voices));
+        crit.setProjection(Projections.rowCount());
+        return (int)crit.uniqueResult();
+    }
 	
 	
 	/**
@@ -177,5 +190,17 @@ public class SoundDAO extends RootDAO {
     	query.setParameter("sDate", startDate);
     	query.setParameter("eDate", endDate);
     	return query.list();
+    }
+    
+    
+    /**
+     * 依產業別刪除
+     * @param voice
+     */
+    public int deleteByVoice(String voice){
+    	String sql = "delete from sound where section = :voice ";
+    	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
+    	query.setParameter("voice", voice);
+    	return query.executeUpdate();
     }
 }

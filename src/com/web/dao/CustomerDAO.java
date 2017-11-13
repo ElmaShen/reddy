@@ -42,6 +42,18 @@ public class CustomerDAO extends RootDAO {
 	
 	
 	/**
+    * 查詢筆數
+    * @param sections
+    * @return
+    */
+	 public int queryCount(String[] sections) {
+	     Criteria crit = sessionFactory.getCurrentSession().createCriteria(Customer.class);
+	     crit.add(Restrictions.in("section", sections));
+	     crit.setProjection(Projections.rowCount());
+	     return (int)crit.uniqueResult();
+	 }
+	
+	/**
      * 查詢所有筆數
      * @return
      */
