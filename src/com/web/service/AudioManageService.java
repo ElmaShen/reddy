@@ -14,12 +14,15 @@ public interface AudioManageService {
 	public Sound querySoundById(long id);
 	public PageBean querySoundByPage(String year, String mon, String area, String cust, String title, String section, String[] voices,
 										Integer second, String tone, String role, String skill, int pageSize, int page);
+	public int querySoundCount(String[] voices);
+	public int deleteSoundByVoice(String voice);
 	public void deleteSound(Sound sound);
 	public List<Object[]> querySoundGroupBySec(Date startDate, Date endDate);
 	
 	
 	//照片、影片管理
 	public PageBean queryAudioByPage(String keywords, String gname, int pageSize, int page);
+	public int queryAudioCnt();
 	public Audio queryAudioById(long id);
 	public List<Audio> queryAudioByGno(int gno);
 	public void updateAudio(Audio audio);

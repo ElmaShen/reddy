@@ -72,12 +72,21 @@
 		$('#tabs').tab();
 		$("#bar").hide();
 		
+		$('input[name=batchType]').click(function() { 
+			if($(this).val() == "M"){
+				$("#section").show();
+			}else{
+				$("#section").hide();
+			}
+		}); 
+		
+		//整批轉檔
 		$('#batch_btn').click(function() { 
 			if($("#batchPath").val() == ""){
 				alert("請填入資料夾路徑");
 				return;
 			}
-			$.blockUI({ message: $('#question'), css: { width: '275px' } }); 
+			$.blockUI({ message: $('#bu_question'), css: { width: '275px' } }); 
 		}); 
 		$('#yes').click(function() { 
 		    // update the block message 
@@ -138,6 +147,29 @@
 		    $.unblockUI(); 
 		    return false; 
 		}); 
+		
+		//整批刪除
+		$('#delete_btn').click(function() { 
+			if($("#voices").val() == ""){
+				alert("請選擇「產業類別」");
+				return;
+			}
+			$.blockUI({ message: $('#del_question'), css: { width: '350px' } }); 
+		}); 
+		$('#d_yes').click(function() { 
+			$.get("deleteAll.action",
+			      {"voices" : $("#voices").val()},
+			   	  function(data){ 
+			    	  alert(data.message);
+			    	  $.unblockUI(); 
+			      },
+			      "json"
+		  	);
+		}); 
+		$('#d_no').click(function() { 
+		    $.unblockUI(); 
+		    return false; 
+		});
 	});
 </script>
 
@@ -214,8 +246,12 @@
 				    	轉檔類型:　<input type="radio" name="batchType" value="M" checked /> 音檔
 			               	    　   &nbsp;<input type="radio" name="batchType" value="C" /> 個案<br>
 						資料夾路徑:　<s:textfield id="batchPath" theme="simple" size="50%" />&nbsp;
-                        <button type="button" class="btn btn-primary" id="batch_btn">開始轉檔</button><br>
-                        　　　　　　<font color="red">(路徑請勿以"\"結尾)</font>
+                        <button type="button" class="btn btn-primary" id="batch_btn">整批轉檔</button><br>
+                        　　　　　　<font color="blue">(路徑請勿以"\"結尾)</font><br>
+                        <span id="section">
+						產業類別:　<s:select id="voices" headerKey="" headerValue="-" theme="simple" list="voiceCombo()" />&nbsp;
+						<button type="button" class="btn btn-danger" id="delete_btn">整批刪除</button><br>
+						</span>
 					</form>
 					
 					歷時 : <font color="blue"><label id="totTime">&nbsp;</label></font><br>
@@ -266,10 +302,16 @@
   </body>
 </html>
 
-<div id="question" style="display:none; cursor: default;"> 
-	<h4>是否開始執行?</h4> 
+<div id="bu_question" style="display:none; cursor: default;"> 
+	<h4>是否開始執行轉檔?</h4> 
 	<input type="button" id="yes" value="Yes" /> 
 	<input type="button" id="no" value="No" />
+	<p>
+</div> 
+<div id="del_question" style="display:none; cursor: default;"> 
+	<h4>資料及檔案會一併刪除，是否繼續執行?</h4> 
+	<input type="button" id="d_yes" value="Yes" /> 
+	<input type="button" id="d_no" value="No" />
 	<p>
 </div> 
 

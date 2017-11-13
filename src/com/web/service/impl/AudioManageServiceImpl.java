@@ -54,6 +54,16 @@ public class AudioManageServiceImpl implements AudioManageService {
 	}
 	
 	@Override
+	public int querySoundCount(String[] voices){
+		return soundDAO.queryCount(voices);
+	}
+	
+	@Override
+	public int deleteSoundByVoice(String voice){
+		return soundDAO.deleteByVoice(voice);
+	}
+	
+	@Override
 	public void deleteSound(Sound sound){
 		soundDAO.delete(sound);
 	}
@@ -61,6 +71,11 @@ public class AudioManageServiceImpl implements AudioManageService {
 	@Override
 	public List<Object[]> querySoundGroupBySec(Date startDate, Date endDate){
 		return soundDAO.queryGroupBySec(startDate, endDate);
+	}
+	
+	@Override
+	public int queryAudioCnt(){
+		return audioDAO.queryCount();
 	}
 	
 	@Override

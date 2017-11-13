@@ -33,6 +33,11 @@ public class CustomerServiceImpl implements CustomerService {
 	}
 	
 	@Override
+	public int queryCustomerCnt(String[] sections){
+		return customerDAO.queryCount(sections);
+	}
+	
+	@Override
 	public PageBean queryCustomerByPage(String section, String[] sections, String category, String custName, String keyword, int pageSize, int page){
 		int totalCount = customerDAO.getAllRowCount(section, sections, category, custName, keyword);    
         int totalPage = PageBean.countTotalPage(pageSize, totalCount);  

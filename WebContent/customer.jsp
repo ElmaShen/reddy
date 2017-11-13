@@ -304,6 +304,11 @@
               </div>
               <div class="row">
                   <div class="col-lg-12">
+ 					<font color="blue">可查詢筆數：<s:property value="custCnt"/></font>
+             	  </div>
+              </div>
+              <div class="row">
+                  <div class="col-lg-12">
                       <section class="panel">
                           <table class="table table-hover">
                               <thead class="panel-heading">

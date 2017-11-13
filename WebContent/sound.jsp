@@ -89,8 +89,13 @@
 			    	 $("#second").val(data.sound.second);
 			    	 $("#voice").val(data.sound.section);
 			    	 $("#role").val(data.sound.role);
-			    	 $("#skill").val(data.sound.skill);
 			    	 $("#tone").val(data.sound.tone);
+			    	 var ary = data.sound.skill.split(",");
+			    	 if(ary.length > 0){
+			    		 for(var i=0; i<ary.length; i++){
+			    			 $("#skill_"+(i+1)).val(ary[i]);
+			    		 }
+			    	 }
 			      },
 			      "json"
 		  	);
@@ -151,7 +156,7 @@
 		$("#second").val(second);
 		$("#role").val(role);
 		$("#tone").val(tone);
-		$("#skill").val(skill);
+		$("#skill_1").val(skill);
 	}
 	function addFile(){
 		var newRow  = '<tr>'; 
@@ -179,7 +184,7 @@
 		if($("#voice").val() == ""){
 			msg += "產業類別\n"
 		}
-		if($("#skill").val() == ""){
+		if($("#skill_1").val() == "" && $("#skill_2").val() == "" && $("#skill_3").val() == ""){
 			msg += "手法\n"
 		}
 		if($("#tone").val() == ""){
@@ -333,6 +338,11 @@
 	              </s:form>
              	</div>
              </section>
+             <div class="row">
+                  <div class="col-lg-12">
+ 					<font color="blue">可查詢筆數：<s:property value="soundCnt"/></font>
+             	  </div>
+             </div>
               <div class="row">
                   <div class="col-lg-12">
                       <section class="panel">
@@ -469,7 +479,9 @@
 							<tr>
 					    		<td align="right" width="25%"><font color="red">*</font>手法:　</td>
 					    		<td>
-									<s:select id="skill" name="sound.skill" headerKey="" headerValue="-" theme="simple" list="skillCombo()" />
+									<s:select id="skill_1" name="skills" headerKey="" headerValue="-" theme="simple" list="skillCombo()" />
+									<s:select id="skill_2" name="skills" headerKey="" headerValue="-" theme="simple" list="skillCombo()" />
+									<s:select id="skill_3" name="skills" headerKey="" headerValue="-" theme="simple" list="skillCombo()" />
 								</td>
 							</tr>
 							<tr>
@@ -480,8 +492,8 @@
 							</tr>
 							<tr id="fhead">
 					    		<td align="right" width="25%">檔案:　</td>
-					    		<td>
-					    			<a class="btn btn-success" href="#" onclick="addFile();"><i class="icon_plus_alt2" title="增加"></i></a>
+					    		<td>&nbsp;
+					    			<!-- <a class="btn btn-success" href="#" onclick="addFile();"><i class="icon_plus_alt2" title="增加"></i></a> -->
 								</td>
 							</tr>
 							<tr id="fbody">
