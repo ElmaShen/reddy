@@ -56,6 +56,7 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 	
 	private long id;
 	private long attrId;
+	private int custCnt;
 	private String flag;
 	private String shSection;
 	private String shCategory;
@@ -85,6 +86,7 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
     private String[] duploadFileName;   
     private String[] duploadContentType; 
     
+    private final String SLASH = "\\";
     private InputStream fileInputStream;
     private String filename;
 	
@@ -104,6 +106,19 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 	public String customer() {
 		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
 		funcs = this.systemService.queryFuncByAuths(user.getAccount());
+		//個案 產業類別
+		String[] ary = null;
+		if(user.getAuthority() != null && user.getAuthority().containsKey("F02")) {
+			Authority au = user.getAuthority().get("F02");
+			if(au.getSection() != null) {
+				ary = au.getSection().split(",");
+			}
+		}
+		custCnt = 0;
+		if(ary != null && ary.length > 0){
+			custCnt = this.customerService.queryCustomerCnt(ary);
+		}
+		
 		return SUCCESS;
 	} 
 	
@@ -114,13 +129,16 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 	public String customerList() {
 		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
 		funcs = this.systemService.queryFuncByAuths(user.getAccount());
-		//個案 產業類別
 		String[] ary = null;
 		if(user.getAuthority() != null && user.getAuthority().containsKey("F02")) {
 			Authority au = user.getAuthority().get("F02");
 			if(au.getSection() != null) {
 				ary = au.getSection().split(",");
 			}
+		}
+		custCnt = 0;
+		if(ary != null && ary.length > 0){
+			custCnt = this.customerService.queryCustomerCnt(ary);
 		}
 				
 		if(page == null || page == 0){
@@ -198,7 +216,7 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 		String path = loadConfig("upload.path") + loadConfig("upload.cust.path");
 		Map<String, String> map = this.sectionCombo();
 		String secName = map.get(customer.getSection());
-		path += "\\" + secName + "-" + customer.getCustName() + "\\";
+		path += this.SLASH + secName + "-" + customer.getCustName() + this.SLASH;
 		StringBuffer buf = new StringBuffer();
 		if(aupload != null){
 			uploadFile(path, "A.提案", aupload, auploadFileName, auploadContentType, buf);
@@ -222,7 +240,7 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 	
 	private void uploadFile(String path, String type, File[] upload, String[] uploadFileName, String[] uploadContentType, StringBuffer buf){
 		try{
-			path += type + "\\";
+			path += type + this.SLASH;
 			File des = new File(path);
 			if(!des.exists()){
 				des.mkdirs();
@@ -322,7 +340,7 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
             // OpenOffice的安裝目錄
             String OpenOffice_HOME = this.loadConfig("openoffice.path");  
             if (OpenOffice_HOME.charAt(OpenOffice_HOME.length() - 1) != '\\') {  
-                OpenOffice_HOME += "\\";  
+                OpenOffice_HOME += this.SLASH;  
             }  
             // 啟動OpenOffice的服務
             String command = OpenOffice_HOME + "soffice.exe -headless -accept=\"socket,host=127.0.0.1,port=8100;urp;\"";  
@@ -414,6 +432,17 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 	public String deleteCust(){
 		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
 		funcs = this.systemService.queryFuncByAuths(user.getAccount());
+		String[] ary = null;
+		if(user.getAuthority() != null && user.getAuthority().containsKey("F02")) {
+			Authority au = user.getAuthority().get("F02");
+			if(au.getSection() != null) {
+				ary = au.getSection().split(",");
+			}
+		}
+		custCnt = 0;
+		if(ary != null && ary.length > 0){
+			custCnt = this.customerService.queryCustomerCnt(ary);
+		}
 		
 		Customer c = this.customerService.queryCustomerById(id);
 		List<CustomerAttach> achs = this.customerService.queryCustomerAttachByCustId(c.getId());
@@ -554,6 +583,12 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 	}
 	public void setAttrId(long attrId) {
 		this.attrId = attrId;
+	}
+	public int getCustCnt() {
+		return custCnt;
+	}
+	public void setCustCnt(int custCnt) {
+		this.custCnt = custCnt;
 	}
 	public String getFlag() {
 		return flag;

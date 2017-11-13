@@ -48,6 +48,8 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
     private List<String> flist;	//失敗
     private String totTime;
     private Customer cust;
+    private String voices;
+    private final String SLASH = "\\";
 	
 	
 	private javax.servlet.http.HttpServletRequest request;
@@ -91,10 +93,10 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 			}else{
 				type = "個案";
 				target += loadConfig("upload.cust.path");
-				String path = batchPath.substring(batchPath.lastIndexOf("\\")+1);
+				String path = batchPath.substring(batchPath.lastIndexOf(this.SLASH)+1);
 				//產業類別-客戶層
 				if(path.indexOf("-") != -1){
-					target += "\\" + path;
+					target += this.SLASH + path;
 				}
 				copyCustFolder(batchPath, target, "");
 			}
@@ -134,7 +136,7 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 							//建立目錄
 							if(cnt == 0){
 								String[] fn = fName.split("\\.");
-								newPath += map.get(fn[1]) + "\\" + fn[0]+map.get(fn[1]) + "\\";
+								newPath += map.get(fn[1]) + this.SLASH + fn[0]+map.get(fn[1]) + this.SLASH;
 								File folder = new File(newPath);
 								if(!folder.exists()){
 									folder.mkdirs();
@@ -159,7 +161,7 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 					}
 					//子資料夾
 					if(temp.isDirectory()){
-						copySoundFolder(oldPath+"\\"+file[i], newPath);
+						copySoundFolder(oldPath+this.SLASH+file[i], newPath);
 					}
 				}
 				
@@ -228,7 +230,7 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 						
 						Map<String, String> map = this.voiceMap();
 						if(cnt == 0){
-							path += map.get(str[1]) + "\\" + str[0]+map.get(str[1]) + "\\";
+							path += map.get(str[1]) + this.SLASH + str[0]+map.get(str[1]) + this.SLASH;
 						}
 						Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
 						Sound s = new Sound();
@@ -266,7 +268,7 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 		String section = secStr;
 		try{
 			String cname = "", sec = "";
-			String path = newPath.substring(newPath.lastIndexOf("\\")+1);
+			String path = newPath.substring(newPath.lastIndexOf(this.SLASH)+1);
 			if(path.indexOf("-") != -1){
 				cname = path.split("-")[1];
 				sec = path.split("-")[0];
@@ -327,10 +329,10 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 							fis.close();
 							
 							if(cust != null){
-								String type = newPath.substring(newPath.lastIndexOf("\\")+1);
+								String type = newPath.substring(newPath.lastIndexOf(this.SLASH)+1);
 								CustomerAttach ach = new CustomerAttach();
 								ach.setType(type.indexOf(".") != -1 ? type.substring(0,1) : "");
-								ach.setFilePath(newPath+"\\");
+								ach.setFilePath(newPath+this.SLASH);
 								ach.setFileName(fName);
 								ach.setCustId(cust.getId());
 								this.customerService.updateCustomerAttach(ach);
@@ -355,8 +357,8 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 						if("其他".equals(temp.getName())){
 							str = "D.";
 						}
-						String ss = newPath+"\\"+str+temp.getName();
-						copyCustFolder(oldPath+"\\"+file[i], ss, section);
+						String ss = newPath+this.SLASH+str+temp.getName();
+						copyCustFolder(oldPath+this.SLASH+file[i], ss, section);
 					}
 				}
 				
@@ -369,6 +371,45 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	
+	/**
+	 * 整批刪除
+	 * @return
+	 */
+	public String deleteAll(){
+		int cnt = this.audioManageService.deleteSoundByVoice(voices);
+		if(cnt > 0){
+			Map<String, String> m = this.voiceMap();
+			String dir = m.get(voices);
+			String path = loadConfig("upload.path") + loadConfig("upload.sound.path") + dir;
+			File f = new File(path);
+			deleteDir(f);
+			
+			success = "Y";
+			message = "檔案刪除成功, 共計：" + cnt;
+		}else{
+			message = "無可刪除的檔案";
+		}
+		return SUCCESS;
+	}
+	
+	
+	/**
+	 * 刪除目錄、檔案
+	 * @param dir
+	 * @return
+	 */
+	private boolean deleteDir(File dir) {
+		if (dir.isDirectory()) {
+			File[] files = dir.listFiles();
+			for (int i=0;i<files.length;i++) { 
+				if (!deleteDir(files[i]))
+					return false;
+			}
+		}
+		return dir.delete();
 	}
 	
 	
@@ -500,5 +541,11 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 	}
 	public void setCust(Customer cust) {
 		this.cust = cust;
+	}
+	public String getVoices() {
+		return voices;
+	}
+	public void setVoices(String voices) {
+		this.voices = voices;
 	}
 }

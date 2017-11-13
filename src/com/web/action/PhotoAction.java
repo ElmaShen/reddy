@@ -34,6 +34,7 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 	private List<Func> funcs;
 	
 	private long id;
+	private int audioCnt;
 	private int gno;
 	private String shKeywords;
 	private String shGname;
@@ -46,6 +47,7 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 	private File[] upload;   
     private String[] uploadFileName;   
     private String[] uploadContentType; 
+    private final String SLASH = "\\";
     
     private InputStream fileInputStream;
     private String filename;
@@ -61,6 +63,7 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 	public String photo(){
 		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
 		funcs = this.systemService.queryFuncByAuths(user.getAccount());
+		audioCnt = this.audioManageService.queryAudioCnt();
 		return SUCCESS;
 	}
 	
@@ -81,6 +84,7 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 	public String photoList() {
 		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
 		funcs = this.systemService.queryFuncByAuths(user.getAccount());
+		audioCnt = this.audioManageService.queryAudioCnt();
 		
 		if(page == null || page == 0){
 			page = 1;
@@ -92,7 +96,7 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 			
 			String serverPath = this.loadConfig("server.path");
 			String root = this.loadConfig("upload.path");
-			String uri = serverPath + (a.getFilePath().replace(root, "")+a.getFileName()).replace("\\", "/");
+			String uri = serverPath + (a.getFilePath().replace(root, "")+a.getFileName()).replace(this.SLASH, "/");
 			a.setFileUri(uri);
 		}
 		return SUCCESS;
@@ -250,7 +254,7 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 		for (Audio a : alist) {
 			String serverPath = this.loadConfig("server.path");
 			String root = this.loadConfig("upload.path");
-			String uri = serverPath + (a.getFilePath().replace(root, "")+a.getFileName()).replace("\\", "/");
+			String uri = serverPath + (a.getFilePath().replace(root, "")+a.getFileName()).replace(this.SLASH, "/");
 			a.setFileUri(uri);
 		}
 		return SUCCESS;
@@ -287,6 +291,12 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 	}
 	public void setId(long id) {
 		this.id = id;
+	}
+	public int getAudioCnt() {
+		return audioCnt;
+	}
+	public void setAudioCnt(int audioCnt) {
+		this.audioCnt = audioCnt;
 	}
 	public int getGno() {
 		return gno;

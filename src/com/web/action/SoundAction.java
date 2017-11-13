@@ -40,6 +40,7 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 	private List<Func> funcs;
 	
 	private long id;
+	private int soundCnt;
 	private String shYear;
 	private String shMon;
 	private String shArea;
@@ -56,9 +57,11 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 	private PageBean pageBean;
 	
 	private Sound sound;
+	private String[] skills;
 	private File[] upload;   
     private String[] uploadFileName;   
     private String[] uploadContentType; 
+    private final String SLASH = "\\";
     
     private InputStream fileInputStream;
     private String filename;
@@ -78,6 +81,18 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 	public String sound() {
 		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
 		funcs = this.systemService.queryFuncByAuths(user.getAccount());
+		//音檔 產業類別
+		String[] ary = null;
+		if(user.getAuthority() != null && user.getAuthority().containsKey("F01")) {
+			Authority au = user.getAuthority().get("F01");
+			if(au.getVoice() != null) {
+				ary = au.getVoice().split(",");
+			}
+		}
+		soundCnt = 0;
+		if(ary != null && ary.length > 0){
+			soundCnt = audioManageService.querySoundCount(ary);;
+		}
 		
 		Calendar cal = Calendar.getInstance();
 		shYear = String.valueOf(cal.get(Calendar.YEAR));
@@ -91,7 +106,6 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 	public String soundList() {
 		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
 		funcs = this.systemService.queryFuncByAuths(user.getAccount());
-		//音檔 產業類別
 		String[] ary = null;
 		if(user.getAuthority() != null && user.getAuthority().containsKey("F01")) {
 			Authority au = user.getAuthority().get("F01");
@@ -99,6 +113,11 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 				ary = au.getVoice().split(",");
 			}
 		}
+		soundCnt = 0;
+		if(ary != null && ary.length > 0){
+			soundCnt = audioManageService.querySoundCount(ary);;
+		}
+
 		
 		if(page == null || page == 0){
 			page = 1;
@@ -114,7 +133,7 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 			
 			String serverPath = this.loadConfig("server.path");
 			String root = this.loadConfig("upload.path");
-			String uri = serverPath + (s.getFilePath().replace(root, "")+s.getFileName()).replace("\\", "/");
+			String uri = serverPath + (s.getFilePath().replace(root, "")+s.getFileName()).replace(this.SLASH, "/");
 			s.setFileUri(uri);
 		}
 		return SUCCESS;
@@ -129,7 +148,16 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 		sound = this.audioManageService.querySoundById(id);
 		sound.setSectionName(this.voiceCombo().get(sound.getSection()));
 		sound.setToneName(this.toneCombo().get(sound.getTone()));
-		sound.setSkillName(this.skillCombo().get(sound.getSkill()));
+		String[] ary = sound.getSkill().split(",");
+		if(ary != null && ary.length > 0){
+			String n = "";
+			for (String so : ary) {
+				if(StringUtils.isNotEmpty(so)){
+					n += this.skillCombo().get(so) + "  ";
+				}
+			}
+			sound.setSkillName(n);
+		}
 		return SUCCESS;
 	}
 	
@@ -151,7 +179,7 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 			Attribute attr = this.systemService.queryAttributesByKey(AttributeType.voice.name(), sound.getSection(), null);
 			try{
 				if(attr != null){
-					path += attr.getAttrName() + "\\" + sound.getYear()+attr.getAttrName() + "\\";
+					path += attr.getAttrName() + this.SLASH + sound.getYear()+attr.getAttrName() + this.SLASH;
 					File des = new File(path);
 					if(!des.exists()){
 						des.mkdirs();
@@ -187,8 +215,17 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 						s.setSecond(sound.getSecond());
 						s.setSection(sound.getSection());
 						s.setRole(sound.getRole());
-						s.setSkill(sound.getSkill());
 						s.setTone(sound.getTone());
+						s.setSkill("");
+						if(skills != null && skills.length > 0){
+							String tmp = "";
+							for (String sk : skills) {
+								if(StringUtils.isNotEmpty(sk)){
+									tmp += sk + ",";
+								}
+							}
+							s.setSkill(tmp);
+						}
 						this.audioManageService.updateSound(s);
 						
 						buf.append(uploadFileName[idx]).append(",");
@@ -208,8 +245,17 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 			s.setSecond(sound.getSecond());
 			s.setSection(sound.getSection());
 			s.setRole(sound.getRole());
-			s.setSkill(sound.getSkill());
 			s.setTone(sound.getTone());
+			s.setSkill("");
+			if(skills != null && skills.length > 0){
+				String tmp = "";
+				for (String sk : skills) {
+					if(StringUtils.isNotEmpty(sk)){
+						tmp += sk + ",";
+					}
+				}
+				s.setSkill(tmp);
+			}
 			this.audioManageService.updateSound(s);
 			this.systemService.updateSysRecord(user, "音檔管理【編輯】", s.getFilePath() + s.getFileName());
 		}
@@ -256,6 +302,17 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 	public String deleteSound(){
 		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
 		funcs = this.systemService.queryFuncByAuths(user.getAccount());
+		String[] ary = null;
+		if(user.getAuthority() != null && user.getAuthority().containsKey("F01")) {
+			Authority au = user.getAuthority().get("F01");
+			if(au.getVoice() != null) {
+				ary = au.getVoice().split(",");
+			}
+		}
+		soundCnt = 0;
+		if(ary != null && ary.length > 0){
+			soundCnt = audioManageService.querySoundCount(ary);;
+		}
 		
 		Sound s = this.audioManageService.querySoundById(id);
 		this.audioManageService.deleteSound(s);
@@ -419,6 +476,12 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 	public void setId(long id) {
 		this.id = id;
 	}
+	public int getSoundCnt() {
+		return soundCnt;
+	}
+	public void setSoundCnt(int soundCnt) {
+		this.soundCnt = soundCnt;
+	}
 	public String getShYear() {
 		return shYear;
 	}
@@ -502,6 +565,12 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 	}
 	public void setSound(Sound sound) {
 		this.sound = sound;
+	}
+	public String[] getSkills() {
+		return skills;
+	}
+	public void setSkills(String[] skills) {
+		this.skills = skills;
 	}
 	public File[] getUpload() {
 		return upload;
