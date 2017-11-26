@@ -5,7 +5,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reddy | Music Platform</title>
+<title>Radioad | Music Platform</title>
 
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.min.css">
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap-theme.css">
@@ -71,33 +71,41 @@
 				  //產業設定 全選	
 				  $("#checkAll").click(function() {
 				  	if($("#checkAll").prop("checked")) {
-				  		 $("input:checkbox").prop('checked', true);
+				  		$('input:checkbox.'+key).prop('checked', true);
 				    } else {
-				    	$("input:checkbox").prop('checked', false);
+				    	$('input:checkbox.'+key).prop('checked', false);
 				   	}
 				  });
 			    	
 		    	  for(var i=0; i<data.sections.length; i++){
 		    		  var row = "";
 		    		  row += "<tr>";
-		    		  row += '<td><input type="checkbox" id="'+ key + data.sections[i].split(".")[0] +'" /></td>';
+		    		  row += '<td><input type="checkbox" id="'+ key + data.sections[i].split(".")[0] +'" class="'+key+'" /></td>';
 		    		  row += '<td>'+data.sections[i]+'</td>';
 		    		  row += "</tr>";
 		    		  $('#sTbl tbody').append(row);
 		    	  }
 		    	  
+		    	  var ary = null;
 		    	  if(type=="1" && $("#voice").val() != ""){
-	    		  		var ary = $("#voice").val().split(",");
+		    		  	ary = $("#voice").val().split(",");
 	    		  		for(var i=0; i<ary.length-1; i++){
 	    		  			$("#voice_"+ary[i]).prop('checked', true);
 	    		  		}
 		    	  }
 				  if(type=="2" && $("#section").val() != ""){
-					  	var ary = $("#section").val().split(",");
+					  	ary = $("#section").val().split(",");
 	    		  		for(var i=0; i<ary.length-1; i++){
 	    		  			$("#sec_"+ary[i]).prop('checked', true);
 	    		  		}
 		    	  }
+				  
+				  //全選是否附值
+				  if(ary != null && data.sections.length == ary.length-1){
+					  $("#checkAll").prop("checked", true);
+				  }else{
+					  $("#checkAll").prop("checked", false);
+				  }
 		      },
 		      "json"
 	  	);
@@ -342,7 +350,7 @@
                               <tbody>
                               	  <s:iterator value="pageBean.list" status="i">
 	                              <tr>
-	                                  <td><s:property value="%{#i.index+1}"/></td>
+	                                  <td><s:property value="(pageBean.currentPage-1)*10+(#i.index+1)"/></td>
 	                                  <td><s:property value="account"/></td>
 	                                  <td><s:property value="name"/></td>
 	                                  <td><s:if test='%{isuse eq "Y"}'>是</s:if><s:else>否</s:else></td>

@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 /**
  * 個案管理 - 檔案
@@ -24,6 +25,7 @@ public class CustomerAttach implements java.io.Serializable {
 	private String fileName;
 	private long custId;
 	
+	private String fileUri;
 	
 	public CustomerAttach() {
 	}
@@ -77,5 +79,13 @@ public class CustomerAttach implements java.io.Serializable {
 	}
 	public void setCustId(long custId) {
 		this.custId = custId;
+	}
+	
+	@Transient
+	public String getFileUri() {
+		return fileUri;
+	}
+	public void setFileUri(String fileUri) {
+		this.fileUri = fileUri;
 	}
 }

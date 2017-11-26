@@ -48,6 +48,7 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
     private String[] uploadFileName;   
     private String[] uploadContentType; 
     private final String SLASH = "\\";
+//    private final String SLASH = "/";
     
     private InputStream fileInputStream;
     private String filename;

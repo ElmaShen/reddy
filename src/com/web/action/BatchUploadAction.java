@@ -50,6 +50,7 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
     private Customer cust;
     private String voices;
     private final String SLASH = "\\";
+//    private final String SLASH = "/";
 	
 	
 	private javax.servlet.http.HttpServletRequest request;
@@ -190,69 +191,79 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 	private boolean checkFileFormat(String path, String fileName, int cnt){
 		boolean isOk = false;
 		String[] str = fileName.split("\\.");
-		if(str != null){
-			if(str.length-1 < 6 || str.length-1 > 8){
-				flist.add(fileName + "@#@屬性對應格式有誤(需介於6~8)");
+		if(str != null && str.length > 0){
+			//檔案格式需為mp3
+			if(!"mp3".equals(str[str.length-1])){
+				flist.add(fileName + "@#@檔案需為mp3");
 			}else{
-				//檔案格式需為mp3
-				if(!"mp3".equals(str[str.length-1])){
-					flist.add(fileName + "@#@檔案需為mp3");
-				}else{
-					String title = "", tone = "", role = "", skill = "";
-					int second = 0;
+				Map<String, String> map = this.sectionMap();
+				String title = "", tone = "", role = "", skill = "";
+				int second = 0;
+				try {
+					//年份
 					try {
-						if(str[3].indexOf("秒") != -1){
-							second = Integer.parseInt(str[3].substring(0, str[3].indexOf("秒")));
-						}else{
-							title = str[3];
-							if(str[4].indexOf("秒") != -1){
-								second = Integer.parseInt(str[4].substring(0, str[4].indexOf("秒")));
-							}else{
-								tone = str[4];
-							}
-						}
-						if(str.length-1 == 6){
-							skill = str[5];
-						}
-						if(str.length-1 == 7){
-							if(this.toneMap().containsKey(str[5])){
-								tone = str[5];
-							}else{
-								role = str[5];
-							}
-							skill = str[6];
-						}
-						if(str.length-1 == 8){
-							tone = str[5];
-							role = str[6];
-							skill = str[7];
-						}
-						
-						Map<String, String> map = this.voiceMap();
-						if(cnt == 0){
-							path += map.get(str[1]) + this.SLASH + str[0]+map.get(str[1]) + this.SLASH;
-						}
-						Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
-						Sound s = new Sound();
-						s.setYear(str[0]);
-						s.setSection(str[1]);
-						s.setCustName(str[2]);
-						s.setTitle(title);
-						s.setSecond(second);
-						s.setRole(role);
-						s.setSkill(skill);
-						s.setTone(tone);
-						s.setFilePath(path);
-						s.setFileName(fileName);
-						s.setBatch("Y");
-						s.setCreator(user.getAccount());
-						s.setCreateDate(new Date());
-						this.audioManageService.updateSound(s);
-						
-						isOk = true;
+						int n = Integer.parseInt(str[0]);
 					} catch (Exception e) {
-						flist.add(fileName + "@#@資料新增db有誤");
+						if(str[0].length() != 4){
+							flist.add(fileName + "@#@年份需為西元年,數字格式");
+						}
 					}
+					//產業類別
+					if(!map.containsKey(str[1])){
+						flist.add(fileName + "@#@產業類別無「"+str[1]+"」的代碼設定");
+					}
+					//篇名、秒數
+					if(str[3].indexOf("秒") != -1){
+						second = Integer.parseInt(str[3].substring(0, str[3].indexOf("秒")));
+					}else{
+						title = str[3];
+						if(str[4].indexOf("秒") != -1){
+							second = Integer.parseInt(str[4].substring(0, str[4].indexOf("秒")));
+						}else{
+							tone = str[4];
+						}
+					}
+					//調性.手法.角色
+					for(int i=4; i<str.length-1; i++){
+						if(this.toneMap().containsKey(str[i])){
+							tone = str[i];
+						}else if(this.skillMap().containsKey(str[i])){
+							skill += str[i] + ",";
+						}else{
+							role = str[i];
+						}
+					}
+					if(StringUtils.isEmpty(tone)){
+						flist.add(fileName + "@#@無調性");
+					}
+					if(StringUtils.isEmpty(skill)){
+						flist.add(fileName + "@#@無手法");
+					}
+					
+					
+					if(cnt == 0){
+						path += map.get(str[1]) + this.SLASH + str[0]+map.get(str[1]) + this.SLASH;
+					}
+					Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
+					Sound s = new Sound();
+					s.setYear(str[0]);
+					s.setSection(str[1]);
+					s.setCustName(str[2]);
+					s.setTitle(title);
+					s.setSecond(second);
+					s.setRole(role);
+					s.setSkill(skill);
+					s.setTone(tone);
+					s.setFilePath(path);
+					s.setFileName(fileName);
+					s.setBatch("Y");
+					s.setCreator(user.getAccount());
+					s.setCreateDate(new Date());
+					this.audioManageService.updateSound(s);
+					
+					isOk = true;
+				} catch (Exception e) {
+					flist.add(fileName + "@#@資料新增db有誤");
 				}
 			}
 		}else{
@@ -419,6 +430,14 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 	}
 	
 
+	private Map<String, String> skillMap() {
+		List<Attribute> list = this.systemService.queryAttributesByType(AttributeType.skill.name(), "Y");
+		Map<String, String> map = new LinkedHashMap<String, String>();
+		for (Attribute a : list) {
+			map.put(a.getAttrKey(), a.getAttrName());
+		}
+		return map;
+	}
 	
 	private Map<String, String> toneMap() {
 		List<Attribute> list = this.systemService.queryAttributesByType(AttributeType.tone.name(), "Y");

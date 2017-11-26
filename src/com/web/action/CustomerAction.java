@@ -87,6 +87,7 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
     private String[] duploadContentType; 
     
     private final String SLASH = "\\";
+//    private final String SLASH = "/";
     private InputStream fileInputStream;
     private String filename;
 	
@@ -172,6 +173,14 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 			
 			List<CustomerAttach> achs = this.customerService.queryCustomerAttachByCustId(customer.getId());
 			if(achs != null){
+				for (CustomerAttach a : achs) {
+					if("C".equals(a.getType())){
+						String serverPath = this.loadConfig("server.path");
+						String root = this.loadConfig("upload.path");
+						String uri = serverPath + (a.getFilePath().replace(root, "")+a.getFileName()).replace(this.SLASH, "/");
+						a.setFileUri(uri);
+					}
+				}
 				customer.setAttachs(achs);
 			}
 		}
@@ -343,7 +352,7 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
                 OpenOffice_HOME += this.SLASH;  
             }  
             // 啟動OpenOffice的服務
-            String command = OpenOffice_HOME + "soffice.exe -headless -accept=\"socket,host=127.0.0.1,port=8100;urp;\"";  
+            String command = OpenOffice_HOME + "soffice.exe -headless -accept=\"socket,host=127.0.0.1,port=8100;urp;\"";
             Process pro = Runtime.getRuntime().exec(command);  
             OpenOfficeConnection connection = new SocketOpenOfficeConnection("127.0.0.1", 8100);  
             connection.connect();  

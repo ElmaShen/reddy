@@ -5,7 +5,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reddy | Music Platform</title>
+<title>Radioad | Music Platform</title>
 
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.min.css">
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap-theme.css">
@@ -104,8 +104,9 @@
 		}
 	}
 	function setFieldValue(o){
-		val = o.value;
+		var val = o.value;
 		var str = val.substring(val.lastIndexOf("\\")+1);
+// 		var str = val.substring(val.lastIndexOf("/")+1);
 		var ary = str.split(".");
 		if(ary[ary.length-1] != "mp3"){
 			alert("檔案需為mp3格式!");
@@ -364,7 +365,7 @@
                               <tbody>
                               	  <s:iterator value="pageBean.list" status="i">
                               	  <tr>
-	                                  <td><s:property value="%{#i.index+1}"/></td>
+	                                  <td><s:property value="(pageBean.currentPage-1)*10+(#i.index+1)"/></td>
 	                                  <td><s:property value="year" /></td>
 	                                  <td><s:property value="custName" /></td>
 	                                  <td><s:property value="title" /></td>

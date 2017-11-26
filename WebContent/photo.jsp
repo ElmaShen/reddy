@@ -5,7 +5,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reddy | Music Platform</title>
+<title>Radioad | Music Platform</title>
 
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.min.css">
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap-theme.css">
@@ -75,6 +75,7 @@
 	function checkFile(o){
 		val = o.value;
 		var str = val.substring(val.lastIndexOf("\\")+1);
+// 		var str = val.substring(val.lastIndexOf("/")+1);
 		var ary = str.split(".");
 		var str = ary[ary.length-1];
 		if(str != "jpg" && str != "gif" && str != "png" && str != "bmp" &&
@@ -88,6 +89,7 @@
 	function checkVideoFile(o){
 		val = o.value;
 		var str = val.substring(val.lastIndexOf("\\")+1);
+// 		var str = val.substring(val.lastIndexOf("/")+1);
 		var ary = str.split(".");
 		var str = ary[ary.length-1];
 		if(str != "mp4" && str != "MP4"){
@@ -314,7 +316,7 @@
                               <tbody>
 	                              <s:iterator value="pageBean.list" status="i">
 	                              <tr>
-	                                  <td><s:property value="%{#i.index+1}"/></td>
+	                                  <td><s:property value="(pageBean.currentPage-1)*10+(#i.index+1)"/></td>
 	                                  <td><s:property value="gname"/></td>
 	                                  <td><s:property value="keywords"/></td>
 	                                  <td><s:property value="fileName"/></td>

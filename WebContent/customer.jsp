@@ -5,7 +5,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reddy | Music Platform</title>
+<title>Radioad | Music Platform</title>
 
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.min.css">
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap-theme.css">
@@ -86,7 +86,11 @@
 	function addFile(id, tbl){
 		var n = id+"upload";
 		var newRow  = '<tr>'; 
+		if(tbl == "cTbl"){	//素材
+			newRow += '<td><input type="file" name="'+n+'" onchange="checkValue(this);"/></td>';
+		}else{
 			newRow += '<td><input type="file" name="'+n+'" /></td>';
+		}
 			newRow += '</tr>';
 		$("#"+tbl+" tr:last").after(newRow);
 	}
@@ -165,15 +169,22 @@
 		    		 }
 					 if(objs[i].type == "C"){	//素材
 						 tbl = "v_cTbl";
-						 newRow += '<td width="70%">'+objs[i].fileName+'</td>';
+						 newRow += '<td width="70%">';
+						 newRow += objs[i].fileName;
+						 newRow += '<br><audio src="'+objs[i].fileUri+'" controls controlsList="nodownload"></audio>';
+						 newRow += '</td>';
 		    		 }
 					 if(objs[i].type == "D"){	//其他
 						 tbl = "v_dTbl";
 						 newRow += '<td width="70%">'+objs[i].fileName+'</td>';
 		    		 }
-					 newRow += '<td><a class="btn btn-warning" href="onlineReadDoc.action?id='+objs[i].id+'" target="_blank"><i class="icon_zoom-in" title="檢視"></i></a></a>';
+					 newRow += '<td>';
+					 if(objs[i].type != "C"){
+						 newRow += '<a class="btn btn-warning" href="onlineReadDoc.action?id='+objs[i].id+'" target="_blank"><i class="icon_zoom-in" title="檢視"></i></a></a>';
+					 }
 					 newRow += '<a class="btn btn-success" href="downloadCust.action?id='+objs[i].id+'" ><i class="icon_cloud-download_alt" title="下載"></i></a>';
-    				 newRow += '<a class="btn btn-danger" href="#" onclick="deleteDocument(this, '+objs[i].id+');"><i class="icon_close_alt2" title="刪除"></i></a></td>';
+    				 newRow += '<a class="btn btn-danger" href="#" onclick="deleteDocument(this, '+objs[i].id+');"><i class="icon_close_alt2" title="刪除"></i></a>';
+    				 newRow += '</td>';
     				 newRow += '</tr>';
 	    			 $("#"+tbl+" tbody").append(newRow);
 		    	 }
@@ -199,6 +210,17 @@
 		    		}
 			    }
 			);
+		}
+	}
+	function checkValue(o){
+		var val = o.value;
+		var str = val.substring(val.lastIndexOf("\\")+1);
+// 		var str = val.substring(val.lastIndexOf("/")+1);
+		var ary = str.split(".");
+		if(ary[ary.length-1] != "mp3"){
+			alert("素材需為mp3格式!");
+			o.value = "";
+			return;
 		}
 	}
 </script>
@@ -324,7 +346,7 @@
                               <tbody>
                               	<s:iterator value="pageBean.list" status="i">
                               	<tr>
-	                                <td><s:property value="%{#i.index+1}"/></td>
+	                                <td><s:property value="(pageBean.currentPage-1)*10+(#i.index+1)"/></td>
 	                                <td><s:property value="custName"/></td>
 	                                <td><s:property value="sectionName"/></td>
 	                                <td><s:property value="categoryName"/></td>
@@ -445,7 +467,7 @@
 							    <div id="menu2" class="tab-pane fade">
 							     	檔案:　<a class="btn btn-success" href="#" onclick="addFile('c','cTbl');"><i class="icon_plus_alt2" title="增加"></i></a><p/>
 							      	<table id="cTbl">
-					    				<tr><td><input type="file" name="cupload" /></td></tr>
+					    				<tr><td><input type="file" name="cupload" onchange="checkValue(this);"/></td></tr>
 					    			</table>
 							    </div>
 							    <div id="menu3" class="tab-pane fade">

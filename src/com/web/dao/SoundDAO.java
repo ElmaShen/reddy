@@ -133,7 +133,7 @@ public class SoundDAO extends RootDAO {
     	if(!StringUtils.isEmpty(shSkill)){
     		hql += "and skill = :skill ";
     	}
-    	hql += "order by createDate desc ";
+    	hql += "order by year desc, month desc, cust_name desc ";
     	
         Query query = sessionFactory.getCurrentSession().createQuery(hql);
         if(!StringUtils.isEmpty(shYear)){

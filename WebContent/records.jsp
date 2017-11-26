@@ -5,7 +5,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reddy | Music Platform</title>
+<title>Radioad | Music Platform</title>
 
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.min.css">
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap-theme.css">
@@ -143,7 +143,7 @@
                               <tbody>
 	                              <s:iterator value="pageBean.list" status="i">
 	                              <tr>
-	                                  <td width="6%"><s:property value="%{#i.index+1}"/></td>
+	                                  <td width="6%"><s:property value="(pageBean.currentPage-1)*10+(#i.index+1)"/></td>
 	                                  <td width="10%"><s:property value="account"/></td>
 	                                  <td width="14%"><s:property value="name"/></td>
 	                                  <td width="15%"><s:property value="action"/></td>

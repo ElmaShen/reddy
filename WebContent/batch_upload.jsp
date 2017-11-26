@@ -5,7 +5,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reddy | Music Platform</title>
+<title>Radioad | Music Platform</title>
 
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.min.css">
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap-theme.css">
@@ -247,7 +247,7 @@
 			               	    　   &nbsp;<input type="radio" name="batchType" value="C" /> 個案<br>
 						資料夾路徑:　<s:textfield id="batchPath" theme="simple" size="50%" />&nbsp;
                         <button type="button" class="btn btn-primary" id="batch_btn">整批轉檔</button><br>
-                        　　　　　　<font color="blue">(路徑請勿以"\"結尾)</font><br>
+                        　　　　　　<font color="blue">(路徑請勿以"/"結尾)</font><br>
                         <span id="section">
 						產業類別:　<s:select id="voices" headerKey="" headerValue="-" theme="simple" list="voiceCombo()" />&nbsp;
 						<button type="button" class="btn btn-danger" id="delete_btn">整批刪除</button><br>
