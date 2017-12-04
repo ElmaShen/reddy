@@ -237,5 +237,8 @@
         <action name="deleteAll" class="com.web.action.BatchUploadAction" method="deleteAll">
 			<result type="json" />
         </action>
+        <action name="changeComboValue" class="com.web.action.BatchUploadAction" method="changeComboValue">
+			<result type="json" />
+        </action>
 	</package>
 </struts>
