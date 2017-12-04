@@ -330,6 +330,13 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 						
 						if(fName.toUpperCase().equals("_DS_STORE")){
 							flist.add(fName + "@#@為無效檔案");
+							
+						}else if(oldPath.indexOf("素材") != -1){
+							String[] fn = fName.split("\\.");
+							if(!"mp3".equals(fn[fn.length-1])){
+								flist.add(fName + "@#@【C.素材】檔案需為mp3");
+							}
+								
 						}else{
 							slist.add(fName);
 							
@@ -411,7 +418,7 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 				deleteDir(f);
 				
 				success = "Y";
-				message = "檔案刪除成功, 共計：" + cnt;
+				message = "刪除成功, 共計：" + cnt + "個檔案";
 			}else{
 				message = "無可刪除的檔案";
 			}
@@ -421,12 +428,10 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 		if("C".equals(batchType)){
 			List<Customer> list = this.customerService.queryCustomerBySection(voices);
 			if(list != null && list.size() > 0){
-				int cnt = 0;
 				Map<String, String> m = this.sectionMapByKey();
 				String path = loadConfig("upload.path") + loadConfig("upload.cust.path") + this.SLASH;
 				for (Customer c : list) {
 					List<CustomerAttach> achs = this.customerService.queryCustomerAttachByCustId(c.getId());
-					cnt += achs.size();
 					c.setAttachs(achs);
 					this.customerService.deleteCustomer(c);
 					
@@ -436,7 +441,7 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 				}
 				
 				success = "Y";
-				message = "檔案刪除成功, 共計：" + cnt;
+				message = "刪除成功, 共計：" + list.size() + "筆個案";
 			}else{
 				message = "無可刪除的檔案";
 			}
