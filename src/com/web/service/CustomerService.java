@@ -13,6 +13,7 @@ public interface CustomerService {
 	public Customer queryCustomerById(long id);
 	public PageBean queryCustomerByPage(String section, String[] sections, String category, String custName, String keyword, int pageSize, int page);
 	public int queryCustomerCnt(String[] sections);
+	public List<Customer> queryCustomerBySection(String section);
 	public void updateCustomer(Customer cust);
 	public void deleteCustomer(Customer cust);
 	
