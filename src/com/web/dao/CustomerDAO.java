@@ -52,6 +52,17 @@ public class CustomerDAO extends RootDAO {
 	     crit.setProjection(Projections.rowCount());
 	     return (int)crit.uniqueResult();
 	 }
+	 
+	 /**
+    * 依產業別查詢
+    * @param section
+    * @return
+    */
+	 public List<Customer> queryBySection(String section){
+		 Criteria crit = sessionFactory.getCurrentSession().createCriteria(Customer.class);
+	     crit.add(Restrictions.eq("section", section));
+	     return crit.list();
+	 }
 	
 	/**
      * 查詢所有筆數
