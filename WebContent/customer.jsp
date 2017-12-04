@@ -57,6 +57,7 @@
 	});
 	
 	function changeSelect(o, objId){
+		$("#shSectionName").val(o.options[o.selectedIndex].text);
 		var val = o.value;
 		var obj = document.getElementById(objId);
 		obj.options.length = 0;
@@ -243,7 +244,7 @@
             </div>
 
             <!--logo start-->
-            <a href="index.html" class="logo">瑞迪 <span class="lite">廣告資訊服務平台</span></a>
+            <a href="index.action" class="logo">瑞迪 <span class="lite">廣告資訊服務平台</span></a>
             <!--logo end-->
 
             <div class="top-nav notification-row">                
@@ -306,11 +307,13 @@
                           <div class="panel-body">
                               <s:form id="shForm" class="form-inline" role="form" namespace="/" action="customerList" method="post">
                               	  <s:hidden name="page" id="page" />
+                              	  <s:hidden name="shSectionName" id="shSectionName" />
+                              	  <s:hidden name="shCategoryName" id="shCategoryName" />
                               	  <label class="control-label">產業類別</label>&nbsp;
                                   <s:select id="shSection" name="shSection" headerKey="" headerValue="-All-" theme="simple" list="sectionCombo()" 
                                   														onchange="changeSelect(this, 'shCategory');" />&nbsp;
                                   <label class="control-label">產品分類</label>&nbsp;
-                                  <s:select id="shCategory" name="shCategory" headerKey="" headerValue="-All-" theme="simple" list="{}" />　
+                                  <s:select id="shCategory" name="shCategory" headerKey="" headerValue="-All-" theme="simple" list="{}" onchange="$('#shCategoryName').val(this.options[this.selectedIndex].text);"/>　
                               	　<label class="control-label">客戶名稱</label>&nbsp;
                               	  <s:textfield id="shCust" name="shCust" theme="simple" />
                                	　<label class="control-label">關鍵字</label>&nbsp;

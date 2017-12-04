@@ -73,11 +73,25 @@
 		$("#bar").hide();
 		
 		$('input[name=batchType]').click(function() { 
-			if($(this).val() == "M"){
-				$("#section").show();
-			}else{
-				$("#section").hide();
-			}
+			$.get("changeComboValue.action",
+			      {"batchType" : $(this).val()},
+			   	  function(data){ 
+			    	  if(data.success == "true"){
+			    		  var obj = document.getElementById("voices");
+			    		  obj.options.length = 0;
+			    		  obj.options.add(new Option("-All-",""));
+			    		  JSON.parse(data.message, function(key, value) {
+							 	if(key != "" && value != ""){
+									var t = $.trim(value);
+									var v = $.trim(key);
+									var option = new Option(t,v);        
+									obj.options.add(option);
+				              	}
+						 });
+			    	  }
+			      },
+			      "json"
+		  	);
 		}); 
 		
 		//整批轉檔
@@ -158,7 +172,8 @@
 		}); 
 		$('#d_yes').click(function() { 
 			$.get("deleteAll.action",
-			      {"voices" : $("#voices").val()},
+			      {"voices" : $("#voices").val(),
+			       "batchType" : $('input[name=batchType]:checked').val()},
 			   	  function(data){ 
 			    	  alert(data.message);
 			    	  $.unblockUI(); 
@@ -191,7 +206,7 @@
             </div>
 
             <!--logo start-->
-            <a href="index.html" class="logo">瑞迪 <span class="lite">廣告資訊服務平台</span></a>
+            <a href="index.action" class="logo">瑞迪 <span class="lite">廣告資訊服務平台</span></a>
             <!--logo end-->
 
             <div class="top-nav notification-row">                
@@ -248,10 +263,8 @@
 						資料夾路徑:　<s:textfield id="batchPath" theme="simple" size="50%" />&nbsp;
                         <button type="button" class="btn btn-primary" id="batch_btn">整批轉檔</button><br>
                         　　　　　　<font color="blue">(路徑請勿以"/"結尾)</font><br>
-                        <span id="section">
 						產業類別:　<s:select id="voices" headerKey="" headerValue="-" theme="simple" list="voiceCombo()" />&nbsp;
 						<button type="button" class="btn btn-danger" id="delete_btn">整批刪除</button><br>
-						</span>
 					</form>
 					
 					歷時 : <font color="blue"><label id="totTime">&nbsp;</label></font><br>

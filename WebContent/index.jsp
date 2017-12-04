@@ -44,7 +44,7 @@
             </div>
 
             <!--logo start-->
-            <a href="index.html" class="logo">瑞迪 <span class="lite">廣告資訊服務平台</span></a>
+            <a href="index.action" class="logo">瑞迪 <span class="lite">廣告資訊服務平台</span></a>
             <!--logo end-->
 
             <div class="top-nav notification-row">                
@@ -63,6 +63,14 @@
           <div id="sidebar"  class="nav-collapse ">
               <!-- sidebar menu start-->
               <ul class="sidebar-menu">  
+              	  <s:iterator value="funcs" status="i">
+	           	  	<li class="">
+	                   <a class="" href="<%=request.getContextPath()%><s:property value="action"/>">
+	                       <i class="<s:property value="icon"/>"></i>
+	                       <span><s:property value="fname"/></span>
+	                   </a>
+	               	</li>  
+              	  </s:iterator>
                   <li>                     
                      <a class="" href="<s:url namespace="/" action="logout" />">
                         <i class="icon_refresh"></i>

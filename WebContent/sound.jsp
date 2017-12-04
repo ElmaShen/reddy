@@ -114,15 +114,11 @@
 			return;
 		}
 		
-		var second = 0, title = "", tone = "", role = "", skill = "";
 // 		a.年份.產業類別.客戶.篇名.秒數.調性.角色.手法
 // 		b.年份.產業類別.客戶.秒數.調性.角色.手法
 // 		c.年份.產業類別.客戶.篇名.秒數.調性.手法
 // 		d.年份.產業類別.客戶.秒數.調性.手法
-		if(ary.length-1 < 6 || ary.length-1 > 8){
-			alert("檔名格式不符,無法更新屬性設定");
-			return;
-		}
+		var second = 0, title = "", tone = "", role = "", skill_1 = "", skill_2 = "", skill_3 = "";
 		$("#year").val(ary[0]);
 		$("#voice").val(ary[1]);
 		$("#custName").val(ary[2]);
@@ -137,27 +133,30 @@
 				tone = ary[4];
 			}
 		}
-		if(ary.length-1 == 6){
-			skill = ary[5];
-		}
-		if(ary.length-1 == 7){
-			if(ary[5].length == 1){
-				tone = ary[5];
+		
+		var toneRegx = /[a-z]/;
+		for(var i=4; i<ary.length-1; i++){
+			if(toneRegx.test(ary[i])){
+				tone = ary[i];
+			}else if(!isNaN(ary[i])){
+				if(skill_1 == ""){
+					skill_1 = ary[i];
+				}else if(skill_2 == ""){
+					skill_2 = ary[i];		
+				}else{
+					skill_3 = ary[i];
+				}
 			}else{
-				role = ary[5];
+				role = ary[i];
 			}
-			skill = ary[6];
-		}
-		if(ary.length-1 == 8){
-			tone = ary[5];
-			role = ary[6];
-			skill = ary[7];
 		}
 		$("#title").val(title);
 		$("#second").val(second);
 		$("#role").val(role);
 		$("#tone").val(tone);
-		$("#skill_1").val(skill);
+		$("#skill_1").val(skill_1);
+		$("#skill_2").val(skill_2);
+		$("#skill_3").val(skill_3);
 	}
 	function addFile(){
 		var newRow  = '<tr>'; 
@@ -307,7 +306,7 @@
                               </div>	　　
                               <div class="col-lg-3">
                               	<label class="control-label">產業類別</label>
-                              	<s:select id="shSection" name="shSection" headerKey="" headerValue="-All-" theme="simple" list="voiceCombo()" />
+                              	<s:select id="shSection" name="shSection" headerKey="" headerValue="-All-" theme="simple" list="voiceCombo()"/>
                               </div>	
 	                  	</div>
 	              	</div>
@@ -468,7 +467,7 @@
 							<tr>
 					    		<td align="right" width="25%"><font color="red">*</font>產業類別:　</td>
 					    		<td>
-									<s:select id="voice" name="sound.section" headerKey="" headerValue="-" theme="simple" list="voiceCombo()" />
+									<s:select id="voice" name="sound.section" headerKey="" headerValue="-" theme="simple" list="voiceCombo()"/>
 								</td>
 							</tr>
 							<tr>

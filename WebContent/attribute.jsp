@@ -130,7 +130,7 @@
             </div>
 
             <!--logo start-->
-            <a href="index.html" class="logo">瑞迪 <span class="lite">廣告資訊服務平台</span></a>
+            <a href="index.action" class="logo">瑞迪 <span class="lite">廣告資訊服務平台</span></a>
             <!--logo end-->
 
             <div class="top-nav notification-row">                
@@ -193,10 +193,11 @@
                           <div class="panel-body">
                               <s:form id="shForm" class="form-inline" role="form" namespace="/" action="attributeList" method="post">
                               	  <s:hidden name="page" id="page" />
+                              	  <s:hidden name="shTypeName" id="shTypeName" />
                        			  <label class="control-label">屬性</label>&nbsp;
-                                  <s:select id="shType" name="shType" headerKey="" headerValue="-All-" theme="simple" list="attrCombo()" />&nbsp;&nbsp;
+                                  <s:select id="shType" name="shType" headerKey="" headerValue="-All-" theme="simple" list="attrCombo()" onchange="$('#shTypeName').val(this.options[this.selectedIndex].text);"/>&nbsp;&nbsp;
                        			  <label class="control-label">名稱</label>&nbsp;
-                                  <s:textfield id="shName" name="shName" theme="simple" />&nbsp;&nbsp;
+                                  <s:textfield id="shAttrName" name="shAttrName" theme="simple" />&nbsp;&nbsp;
                                   	<button type="button" class="btn btn-primary" onclick="queryAttributeList(0);">查詢</button>&nbsp;
                                   <s:if test='%{#added eq "Y"}'>
                                   	<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit_dg" data-backdrop="false">新增</button>

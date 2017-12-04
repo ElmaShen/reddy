@@ -34,10 +34,10 @@ function checkForm(){
       <form class="login-form" id="form" action="login.action" method="post"> 
         <div class="login-wrap">
         	<h3>瑞迪廣告資訊服務平台</h3>
-            <p class="login-img"><i class="icon_lock_alt"></i></p>
+            <p class="login-img"><img src="img/logo21.png"/></p>
             <div class="input-group">
               <span class="input-group-addon"><i class="icon_profile"></i></span>
-              <input type="text" id="account" name="account" class="form-control" placeholder="Account" autofocus>
+              <input  type="text" id="account" name="account" class="form-control" placeholder="Account" autofocus>
             </div>
             <div class="input-group">
                 <span class="input-group-addon"><i class="icon_key_alt"></i></span>
