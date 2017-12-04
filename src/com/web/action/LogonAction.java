@@ -29,6 +29,7 @@ public class LogonAction extends BaseActionSupport implements ServletRequestAwar
 	
 	private String account;
 	private String password;
+	private List<Func> funcs;
 	
 	
 	private javax.servlet.http.HttpServletRequest request;
@@ -116,6 +117,9 @@ public class LogonAction extends BaseActionSupport implements ServletRequestAwar
 	 * @return
 	 */
 	public String index(){
+		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
+		funcs = this.systemService.queryFuncByAuths(user.getAccount());
+		
 		return SUCCESS;
 	}
 
@@ -150,5 +154,11 @@ public class LogonAction extends BaseActionSupport implements ServletRequestAwar
 	}
 	public void setPassword(String password) {
 		this.password = password;
+	}
+	public List<Func> getFuncs() {
+		return funcs;
+	}
+	public void setFuncs(List<Func> funcs) {
+		this.funcs = funcs;
 	}
 }

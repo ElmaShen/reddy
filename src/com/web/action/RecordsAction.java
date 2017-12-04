@@ -46,8 +46,6 @@ public class RecordsAction extends BaseActionSupport implements ServletRequestAw
 	public String records(){
 		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
 		funcs = this.systemService.queryFuncByAuths(user.getAccount());
-		
-		this.systemService.updateSysRecord(user, "操作記錄【查詢】：", "");
 		return SUCCESS;
 	}
 	
@@ -77,6 +75,15 @@ public class RecordsAction extends BaseActionSupport implements ServletRequestAw
 		}
 		pageSize = Integer.parseInt(loadConfig("page.size"));
 		pageBean = this.systemService.querySysRecordByPage(shName, sDate, eDate, pageSize, page);
+		
+		StringBuffer term = new StringBuffer();
+		if(StringUtils.isNotEmpty(shName)){
+			term.append("姓名:").append(shName).append(", ");
+		}
+		if(StringUtils.isNotEmpty(shStartDate) || StringUtils.isNotEmpty(shEndDate)){
+			term.append("日期:").append(shStartDate).append("~").append(shEndDate);
+		}
+		this.systemService.updateSysRecord(user, "操作記錄【查詢】", term.toString());
 		return SUCCESS;
 	}
 

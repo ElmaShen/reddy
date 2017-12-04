@@ -59,7 +59,9 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 	private int custCnt;
 	private String flag;
 	private String shSection;
+	private String shSectionName;
 	private String shCategory;
+	private String shCategoryName;
 	private String shCust;
 	private String shKeyword;
 	
@@ -155,6 +157,21 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 				c.setCategoryName(atr.getAttrName());
 			}
 		}
+		
+		StringBuffer term = new StringBuffer();
+		if(StringUtils.isNotEmpty(shSectionName)){
+			term.append("產業類別:").append(shSectionName).append(", ");
+		}
+		if(StringUtils.isNotEmpty(shCategoryName)){
+			term.append("產品分類:").append(shCategoryName).append(", ");
+		}
+		if(StringUtils.isNotEmpty(shCust)){
+			term.append("客戶名稱:").append(shCust).append(", ");
+		}
+		if(StringUtils.isNotEmpty(shKeyword)){
+			term.append("關鍵字:").append(shKeyword);
+		}
+		this.systemService.updateSysRecord(user, "照片及影片管理【查詢】", term.toString());
 		return SUCCESS;
 	}
 	
@@ -352,7 +369,8 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
                 OpenOffice_HOME += this.SLASH;  
             }  
             // 啟動OpenOffice的服務
-            String command = OpenOffice_HOME + "soffice.exe -headless -accept=\"socket,host=127.0.0.1,port=8100;urp;\"";
+//            String command = OpenOffice_HOME + "soffice.exe -headless -accept=\"socket,host=127.0.0.1,port=8100;urp;\"";
+            String command = OpenOffice_HOME + "soffice -headless -accept=\"socket,host=127.0.0.1,port=8100;urp;\"";
             Process pro = Runtime.getRuntime().exec(command);  
             OpenOfficeConnection connection = new SocketOpenOfficeConnection("127.0.0.1", 8100);  
             connection.connect();  
@@ -611,11 +629,23 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 	public void setShSection(String shSection) {
 		this.shSection = shSection;
 	}
+	public String getShSectionName() {
+		return shSectionName;
+	}
+	public void setShSectionName(String shSectionName) {
+		this.shSectionName = shSectionName;
+	}
 	public String getShCategory() {
 		return shCategory;
 	}
 	public void setShCategory(String shCategory) {
 		this.shCategory = shCategory;
+	}
+	public String getShCategoryName() {
+		return shCategoryName;
+	}
+	public void setShCategoryName(String shCategoryName) {
+		this.shCategoryName = shCategoryName;
 	}
 	public String getShCust() {
 		return shCust;

@@ -100,6 +100,16 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 			String uri = serverPath + (a.getFilePath().replace(root, "")+a.getFileName()).replace(this.SLASH, "/");
 			a.setFileUri(uri);
 		}
+		
+		
+		StringBuffer term = new StringBuffer();
+		if(StringUtils.isNotEmpty(shGname)){
+			term.append("群組:").append(shGname).append(", ");
+		}
+		if(StringUtils.isNotEmpty(shKeywords)){
+			term.append("關鍵字:").append(shKeywords);
+		}
+		this.systemService.updateSysRecord(user, "照片及影片管理【查詢】", term.toString());
 		return SUCCESS;
 	}
 	
@@ -159,7 +169,7 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 			this.uploadFile(user, path, gno, buf);
 		}
 		
-		this.systemService.updateSysRecord(user, "照片及影片管理【"+type+"】：", path + "<br>" + buf.toString());
+		this.systemService.updateSysRecord(user, "照片及影片管理【"+type+"】", path + "<br>" + buf.toString());
 		return SUCCESS;
 	}
 	
@@ -219,7 +229,7 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 				String filePath = a.getFilePath() + a.getFileName();
 				fileInputStream = new FileInputStream(new File(filePath));
 				
-				this.systemService.updateSysRecord(user, "照片及影片管理【下載】：", filePath);
+				this.systemService.updateSysRecord(user, "照片及影片管理【下載】", filePath);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -241,7 +251,7 @@ public class PhotoAction extends BaseActionSupport implements ServletRequestAwar
 		File f = new File(filePath);
 		f.delete();
 		
-		this.systemService.updateSysRecord(user, "照片及影片管理【刪除】：", filePath);
+		this.systemService.updateSysRecord(user, "照片及影片管理【刪除】", filePath);
 		return SUCCESS;
 	}
 	

@@ -16,7 +16,6 @@ import org.apache.struts2.interceptor.ServletRequestAware;
 import com.util.DateUtils;
 import com.web.dao.entity.Account;
 import com.web.dao.entity.Attribute;
-import com.web.dao.entity.Authority;
 import com.web.dao.entity.Customer;
 import com.web.dao.entity.CustomerAttach;
 import com.web.dao.entity.Func;
@@ -25,6 +24,8 @@ import com.web.dao.model.AttributeType;
 import com.web.service.AudioManageService;
 import com.web.service.CustomerService;
 import com.web.service.SystemService;
+
+import net.sf.json.JSONObject;
 
 public class BatchUploadAction extends BaseActionSupport implements ServletRequestAware {
 	
@@ -196,72 +197,81 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 			if(!"mp3".equals(str[str.length-1])){
 				flist.add(fileName + "@#@檔案需為mp3");
 			}else{
-				Map<String, String> map = this.sectionMap();
+				Map<String, String> map = this.voiceMap();
+				int n = 0;
 				String title = "", tone = "", role = "", skill = "";
 				int second = 0;
 				try {
-					//年份
 					try {
-						int n = Integer.parseInt(str[0]);
+						//年份
+						n = Integer.parseInt(str[0]);
 					} catch (Exception e) {
-						if(str[0].length() != 4){
-							flist.add(fileName + "@#@年份需為西元年,數字格式");
-						}
+						flist.add(fileName + "@#@年份需為西元年,數字格式");
 					}
-					//產業類別
-					if(!map.containsKey(str[1])){
-						flist.add(fileName + "@#@產業類別無「"+str[1]+"」的代碼設定");
-					}
-					//篇名、秒數
-					if(str[3].indexOf("秒") != -1){
-						second = Integer.parseInt(str[3].substring(0, str[3].indexOf("秒")));
-					}else{
-						title = str[3];
-						if(str[4].indexOf("秒") != -1){
-							second = Integer.parseInt(str[4].substring(0, str[4].indexOf("秒")));
+					
+					if(n != 0){
+						//產業類別
+						if(map.containsKey(str[1])){	
+							//篇名、秒數
+							try {
+								if(str[3].indexOf("秒") != -1){
+									second = Integer.parseInt(str[3].substring(0, str[3].indexOf("秒")));
+								}else{
+									title = str[3];
+									if(str[4].indexOf("秒") != -1){
+										second = Integer.parseInt(str[4].substring(0, str[4].indexOf("秒")));
+									}else{
+										tone = str[4];
+									}
+								}
+							} catch (Exception e) {
+								flist.add(fileName + "@#@秒數不正確");
+							}
+							
+							if(second != 0){
+								//調性.手法.角色
+								for(int i=4; i<str.length-1; i++){
+									if(this.toneMap().containsKey(str[i])){
+										tone = str[i];
+									}else if(this.skillMap().containsKey(str[i])){
+										skill += str[i] + ",";
+									}else{
+										role = str[i];
+									}
+								}
+								
+								if(StringUtils.isEmpty(tone)){
+									flist.add(fileName + "@#@無調性");
+								}else if(StringUtils.isEmpty(skill)){
+									flist.add(fileName + "@#@無手法");
+								}else{
+									if(cnt == 0){
+										path += map.get(str[1]) + this.SLASH + str[0]+map.get(str[1]) + this.SLASH;
+									}
+									Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
+									Sound s = new Sound();
+									s.setYear(str[0]);
+									s.setSection(str[1]);
+									s.setCustName(str[2]);
+									s.setTitle(title);
+									s.setSecond(second);
+									s.setRole(role);
+									s.setSkill(skill);
+									s.setTone(tone);
+									s.setFilePath(path);
+									s.setFileName(fileName);
+									s.setBatch("Y");
+									s.setCreator(user.getAccount());
+									s.setCreateDate(new Date());
+									this.audioManageService.updateSound(s);
+									
+									isOk = true;
+								}
+							}
 						}else{
-							tone = str[4];
+							flist.add(fileName + "@#@產業類別無「"+str[1]+"」的代碼設定");
 						}
 					}
-					//調性.手法.角色
-					for(int i=4; i<str.length-1; i++){
-						if(this.toneMap().containsKey(str[i])){
-							tone = str[i];
-						}else if(this.skillMap().containsKey(str[i])){
-							skill += str[i] + ",";
-						}else{
-							role = str[i];
-						}
-					}
-					if(StringUtils.isEmpty(tone)){
-						flist.add(fileName + "@#@無調性");
-					}
-					if(StringUtils.isEmpty(skill)){
-						flist.add(fileName + "@#@無手法");
-					}
-					
-					
-					if(cnt == 0){
-						path += map.get(str[1]) + this.SLASH + str[0]+map.get(str[1]) + this.SLASH;
-					}
-					Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
-					Sound s = new Sound();
-					s.setYear(str[0]);
-					s.setSection(str[1]);
-					s.setCustName(str[2]);
-					s.setTitle(title);
-					s.setSecond(second);
-					s.setRole(role);
-					s.setSkill(skill);
-					s.setTone(tone);
-					s.setFilePath(path);
-					s.setFileName(fileName);
-					s.setBatch("Y");
-					s.setCreator(user.getAccount());
-					s.setCreateDate(new Date());
-					this.audioManageService.updateSound(s);
-					
-					isOk = true;
 				} catch (Exception e) {
 					flist.add(fileName + "@#@資料新增db有誤");
 				}
@@ -275,7 +285,7 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 	
 	private void copyCustFolder(String oldPath, String newPath, String secStr) {
 		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
-		Map<String, String> map = this.sectionMap();
+		Map<String, String> map = this.sectionMapByName();
 		String section = secStr;
 		try{
 			String cname = "", sec = "";
@@ -390,19 +400,70 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 	 * @return
 	 */
 	public String deleteAll(){
-		int cnt = this.audioManageService.deleteSoundByVoice(voices);
-		if(cnt > 0){
-			Map<String, String> m = this.voiceMap();
-			String dir = m.get(voices);
-			String path = loadConfig("upload.path") + loadConfig("upload.sound.path") + dir;
-			File f = new File(path);
-			deleteDir(f);
-			
-			success = "Y";
-			message = "檔案刪除成功, 共計：" + cnt;
-		}else{
-			message = "無可刪除的檔案";
+		//音檔
+		if("M".equals(batchType)){
+			int cnt = this.audioManageService.deleteSoundByVoice(voices);
+			if(cnt > 0){
+				Map<String, String> m = this.voiceMap();
+				String dir = m.get(voices);
+				String path = loadConfig("upload.path") + loadConfig("upload.sound.path") + dir;
+				File f = new File(path);
+				deleteDir(f);
+				
+				success = "Y";
+				message = "檔案刪除成功, 共計：" + cnt;
+			}else{
+				message = "無可刪除的檔案";
+			}
 		}
+		
+		//個案
+		if("C".equals(batchType)){
+			List<Customer> list = this.customerService.queryCustomerBySection(voices);
+			if(list != null && list.size() > 0){
+				int cnt = 0;
+				Map<String, String> m = this.sectionMapByKey();
+				String path = loadConfig("upload.path") + loadConfig("upload.cust.path") + this.SLASH;
+				for (Customer c : list) {
+					List<CustomerAttach> achs = this.customerService.queryCustomerAttachByCustId(c.getId());
+					cnt += achs.size();
+					c.setAttachs(achs);
+					this.customerService.deleteCustomer(c);
+					
+					path += m.get(c.getSection()) + "-" + c.getCustName();
+					File f = new File(path);
+					deleteDir(f);
+				}
+				
+				success = "Y";
+				message = "檔案刪除成功, 共計：" + cnt;
+			}else{
+				message = "無可刪除的檔案";
+			}
+		}
+		return SUCCESS;
+	}
+	
+	
+	/**
+	 * 產業類別 下拉
+	 * @return
+	 */
+	public String changeComboValue(){
+		Map<String, String> m = null;
+		if("M".equals(batchType)) {	//音檔
+			m = this.voiceMap();
+		}else {	//個案
+			List<Attribute> list = this.systemService.queryAttributesByType(AttributeType.section.name(), "Y");
+			m = new LinkedHashMap<String, String>();
+			for (Attribute a : list) {
+				m.put(a.getAttrKey(), a.getAttrName());
+			}
+		}
+		
+		JSONObject json = JSONObject.fromObject(m);
+		message = json.toString();
+		success = "true";
 		return SUCCESS;
 	}
 	
@@ -458,7 +519,7 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 		return map;
 	}
 
-	private Map<String, String> sectionMap() {
+	private Map<String, String> sectionMapByName() {
 		List<Attribute> list = this.systemService.queryAttributesByType(AttributeType.section.name(), "Y");
 		Map<String, String> map = new LinkedHashMap<String, String>();
 		for (Attribute a : list) {
@@ -467,36 +528,45 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 		return map;
 	}
 	
+	private Map<String, String> sectionMapByKey() {
+		List<Attribute> list = this.systemService.queryAttributesByType(AttributeType.section.name(), "Y");
+		Map<String, String> map = new LinkedHashMap<String, String>();
+		for (Attribute a : list) {
+			map.put(a.getAttrKey(), a.getAttrName());
+		}
+		return map;
+	}
+	
 	
 
 	/**
-	 * 產業類別(for 音檔管理)
+	 * 產業類別
 	 * @return
 	 */
 	public Map<String, String> voiceCombo() {
-		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
-		Map<String, Authority> auth = user.getAuthority();
-		
-		Map<String, String> map = new LinkedHashMap<String, String>();
-		if(auth.containsKey("F01")){
-			List<Attribute> list = this.systemService.queryAttributesByType(AttributeType.voice.name(), "Y");
-			Map<String, Attribute> m = new LinkedHashMap<String, Attribute>();
-			for (Attribute a : list) {
-				m.put(a.getAttrKey(), a);
-			}
-			
-			Authority au = auth.get("F01");
-			if(StringUtils.isNotEmpty(au.getVoice())){
-				String[] str = au.getVoice().split(",");
-				for(int i=0; i<str.length; i++){
-					if(StringUtils.isNotEmpty(str[i]) && m.containsKey(str[i])){
-						Attribute attr = m.get(str[i]);
-						map.put(attr.getAttrKey(), attr.getAttrName());
-					}
-				}
-			}
-		}
-		return map;
+//		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
+//		Map<String, Authority> auth = user.getAuthority();
+//		
+//		Map<String, String> map = new LinkedHashMap<String, String>();
+//		if(auth.containsKey("F01")){
+//			List<Attribute> list = this.systemService.queryAttributesByType(AttributeType.voice.name(), "Y");
+//			Map<String, Attribute> m = new LinkedHashMap<String, Attribute>();
+//			for (Attribute a : list) {
+//				m.put(a.getAttrKey(), a);
+//			}
+//			
+//			Authority au = auth.get("F01");
+//			if(StringUtils.isNotEmpty(au.getVoice())){
+//				String[] str = au.getVoice().split(",");
+//				for(int i=0; i<str.length; i++){
+//					if(StringUtils.isNotEmpty(str[i]) && m.containsKey(str[i])){
+//						Attribute attr = m.get(str[i]);
+//						map.put(attr.getAttrKey(), attr.getAttrName());
+//					}
+//				}
+//			}
+//		}
+		return this.voiceMap();
 	}
 	
 	

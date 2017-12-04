@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.interceptor.ServletRequestAware;
 
 import com.web.dao.entity.Account;
@@ -27,7 +28,8 @@ public class AttributeAction extends BaseActionSupport implements ServletRequest
 	private String message;
 	private List<Func> funcs;
 	private String shType;
-	private String shName;
+	private String shTypeName;
+	private String shAttrName;
 	
 	private Integer page; // 頁數
 	private Integer pageSize; // 一頁筆數
@@ -62,11 +64,20 @@ public class AttributeAction extends BaseActionSupport implements ServletRequest
 			page = 1;
 		}
 		pageSize = Integer.parseInt(loadConfig("page.size"));
-		pageBean = this.systemService.queryAttributeByPage(shType, shName, pageSize, page);
+		pageBean = this.systemService.queryAttributeByPage(shType, shAttrName, pageSize, page);
 		for(int idx=0; idx<pageBean.getList().size(); idx++){
 			Attribute a = (Attribute)pageBean.getList().get(idx);
 			a.setTypeName(this.attrCombo().get(a.getType()));
 		}
+		
+		StringBuffer term = new StringBuffer();
+		if(StringUtils.isNotEmpty(shTypeName)){
+			term.append("屬性:").append(shTypeName).append(", ");
+		}
+		if(StringUtils.isNotEmpty(shAttrName)){
+			term.append("名稱:").append(shAttrName);
+		}
+		this.systemService.updateSysRecord(user, "屬性設定【查詢】", term.toString());
 		return SUCCESS;
 	}
 	
@@ -120,7 +131,7 @@ public class AttributeAction extends BaseActionSupport implements ServletRequest
 			}
 		}
 		
-		this.systemService.updateSysRecord(user, "屬性設定【"+type+"】：", attribute.getAttrKey() + "-" + attribute.getAttrName());
+		this.systemService.updateSysRecord(user, "屬性設定【"+type+"】", attribute.getAttrKey() + "-" + attribute.getAttrName());
 		success = "Y";
 		message = "設定成功";
 		return SUCCESS;
@@ -204,11 +215,17 @@ public class AttributeAction extends BaseActionSupport implements ServletRequest
 	public void setShType(String shType) {
 		this.shType = shType;
 	}
-	public String getShName() {
-		return shName;
+	public String getShTypeName() {
+		return shTypeName;
 	}
-	public void setShName(String shName) {
-		this.shName = shName;
+	public void setShTypeName(String shTypeName) {
+		this.shTypeName = shTypeName;
+	}
+	public String getShAttrName() {
+		return shAttrName;
+	}
+	public void setShAttrName(String shAttrName) {
+		this.shAttrName = shAttrName;
 	}
 	public Integer getPage() {
 		return page;

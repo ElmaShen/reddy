@@ -56,8 +56,6 @@ public class ChartsAction extends BaseActionSupport implements ServletRequestAwa
 		shEndDate = df.format(cal.getTime());
 		cal.add(Calendar.MONTH, -1);
 		shStartDate = df.format(cal.getTime());
-		
-		this.systemService.updateSysRecord(user, "統計圖表【查詢】：", "");
 		return SUCCESS;
 	}
 
@@ -99,6 +97,13 @@ public class ChartsAction extends BaseActionSupport implements ServletRequestAwa
 			JSONObject json = JSONObject.fromObject(m);
 			jsonStr = json.toString();
 		}
+		
+		Account user = (Account)request.getSession().getAttribute(SESSION_LOGIN_USER);
+		StringBuffer term = new StringBuffer();
+		if(StringUtils.isNotEmpty(shStartDate) || StringUtils.isNotEmpty(shEndDate)){
+			term.append("日期:").append(shStartDate).append("~").append(shEndDate);
+		}
+		this.systemService.updateSysRecord(user, "統計圖表【查詢】", term.toString());
 		return SUCCESS;			
 	}
 

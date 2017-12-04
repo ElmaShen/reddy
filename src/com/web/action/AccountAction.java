@@ -1,18 +1,17 @@
 package com.web.action;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.interceptor.ServletRequestAware;
 
 import com.web.dao.entity.Account;
 import com.web.dao.entity.Attribute;
 import com.web.dao.entity.Authority;
 import com.web.dao.entity.Func;
-import com.web.dao.entity.Sound;
 import com.web.dao.model.AttributeType;
 import com.web.dao.model.PageBean;
 import com.web.service.SystemService;
@@ -122,6 +121,18 @@ public class AccountAction extends BaseActionSupport implements ServletRequestAw
 		}
 		pageSize = Integer.parseInt(loadConfig("page.size"));
 		pageBean = this.systemService.queryAccountByPage(shAccount, shName, shIsuse, pageSize, page);
+		
+		StringBuffer term = new StringBuffer();
+		if(StringUtils.isNotEmpty(shAccount)){
+			term.append("帳號:").append(shAccount).append(", ");
+		}
+		if(StringUtils.isNotEmpty(shName)){
+			term.append("姓名:").append(shName).append(", ");
+		}
+		if(StringUtils.isNotEmpty(shIsuse)){
+			term.append("啟用:").append(shIsuse);
+		}
+		this.systemService.updateSysRecord(user, "帳號管理【查詢】", term.toString());
 		return SUCCESS;
 	}
 	
@@ -186,7 +197,7 @@ public class AccountAction extends BaseActionSupport implements ServletRequestAw
 				auth.setCreateDate(new Date());
 				this.systemService.updateAuthority(auth);
 			}
-			this.systemService.updateSysRecord(user, "帳號管理【"+type+"】：", account.getAccount());
+			this.systemService.updateSysRecord(user, "帳號管理【"+type+"】", account.getAccount());
 			
 			message = "編輯成功";
 			success = "Y";
