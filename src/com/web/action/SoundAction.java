@@ -51,6 +51,11 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 	private String shTone;
 	private String shRole;
 	private String shSkill;
+	private String shAreaName;
+	private String shSectionName;
+	private String shToneName;
+	private String shRoleName;
+	private String shSkillName;
 	
 	private Integer page; // 頁數
 	private Integer pageSize; // 一頁筆數
@@ -137,6 +142,36 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 			String uri = serverPath + (s.getFilePath().replace(root, "")+s.getFileName()).replace(this.SLASH, "/");
 			s.setFileUri(uri);
 		}
+		
+		StringBuffer term = new StringBuffer();
+		if(StringUtils.isNotEmpty(shYear)){
+			term.append("年份:").append(shYear).append(shMon).append(", ");
+		}
+		if(StringUtils.isNotEmpty(shAreaName)){
+			term.append("地區:").append(shAreaName).append(", ");
+		}
+		if(StringUtils.isNotEmpty(shCust)){
+			term.append("客戶:").append(shCust).append(", ");
+		}
+		if(StringUtils.isNotEmpty(shTitle)){
+			term.append("篇名:").append(shTitle).append(", ");
+		}
+		if(StringUtils.isNotEmpty(shSectionName)){
+			term.append("產業類別:").append(shSectionName).append(", ");
+		}
+		if(shSecond != null && shSecond != 0){
+			term.append("秒數:").append(shSecond).append(", ");
+		}
+		if(StringUtils.isNotEmpty(shToneName)){
+			term.append("調性:").append(shToneName).append(", ");
+		}
+		if(StringUtils.isNotEmpty(shRoleName)){
+			term.append("角色:").append(shRoleName).append(", ");
+		}
+		if(StringUtils.isNotEmpty(shSkillName)){
+			term.append("手法:").append(shSkillName);
+		}
+		this.systemService.updateSysRecord(user, "音檔管理【查詢】", term.toString());
 		return SUCCESS;
 	}
 	
@@ -542,6 +577,36 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 	}
 	public void setShSkill(String shSkill) {
 		this.shSkill = shSkill;
+	}
+	public String getShAreaName() {
+		return shAreaName;
+	}
+	public void setShAreaName(String shAreaName) {
+		this.shAreaName = shAreaName;
+	}
+	public String getShSectionName() {
+		return shSectionName;
+	}
+	public void setShSectionName(String shSectionName) {
+		this.shSectionName = shSectionName;
+	}
+	public String getShToneName() {
+		return shToneName;
+	}
+	public void setShToneName(String shToneName) {
+		this.shToneName = shToneName;
+	}
+	public String getShRoleName() {
+		return shRoleName;
+	}
+	public void setShRoleName(String shRoleName) {
+		this.shRoleName = shRoleName;
+	}
+	public String getShSkillName() {
+		return shSkillName;
+	}
+	public void setShSkillName(String shSkillName) {
+		this.shSkillName = shSkillName;
 	}
 	public Integer getPage() {
 		return page;

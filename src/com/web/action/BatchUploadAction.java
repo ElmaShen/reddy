@@ -330,16 +330,16 @@ public class BatchUploadAction extends BaseActionSupport implements ServletReque
 						
 						if(fName.toUpperCase().equals("_DS_STORE")){
 							flist.add(fName + "@#@為無效檔案");
-							
-						}else if(oldPath.indexOf("素材") != -1){
-							String[] fn = fName.split("\\.");
-							if(!"mp3".equals(fn[fn.length-1])){
-								flist.add(fName + "@#@【C.素材】檔案需為mp3");
-							}
-								
 						}else{
-							slist.add(fName);
+							if(oldPath.indexOf("素材") != -1){
+								String[] fn = fName.split("\\.");
+								if(!"mp3".equals(fn[fn.length-1])){
+									flist.add(fName + "@#@【C.素材】檔案需為mp3");
+									continue;
+								}
+							}
 							
+							slist.add(fName);
 							File folder = new File(newPath);
 							if(!folder.exists()){
 								folder.mkdirs();
