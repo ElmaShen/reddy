@@ -13,6 +13,16 @@
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/font-awesome.min.css"/>
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/style.css">
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/style-responsive.css"/>
+<style type="text/css">
+  input[type=text], select {
+	  padding: 6px 10px;
+	  margin: 8px 0;
+	  display: inline-block;
+	  border: 1px solid #ccc;
+	  border-radius: 4px;
+	  box-sizing: border-box;
+  }
+</style>
 <script type="text/javascript" src="<%=request.getContextPath()%>/js/jquery.js"></script>
 <script type="text/javascript" src="<%=request.getContextPath()%>/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="<%=request.getContextPath()%>/js/jquery.scrollTo.min.js"></script>
@@ -285,6 +295,11 @@
                    <div class="panel-body">
                    <s:form id="shForm" class="form-inline" role="form" namespace="/" action="soundList" method="post">
                    	  <s:hidden name="page" id="page" />
+                   	  <s:hidden name="shAreaName" id="shAreaName" />
+                   	  <s:hidden name="shSectionName" id="shSectionName" />
+                   	  <s:hidden name="shToneName" id="shToneName" />
+                   	  <s:hidden name="shRoleName" id="shRoleName" />
+                   	  <s:hidden name="shSkillName" id="shSkillName" />
 		              <div class="row">
 		                  <div class="col-lg-12">
                               <div class="col-lg-2">
@@ -294,7 +309,7 @@
                               </div>
                               <div class="col-lg-2">
                               	<label class="control-label">地區</label>
-                               	<s:select id="shArea" name="shArea" headerKey="" headerValue="-All-" theme="simple" list="areaCombo()" />
+                               	<s:select id="shArea" name="shArea" headerKey="" headerValue="-All-" theme="simple" list="areaCombo()" onchange="$('#shAreaName').val(this.options[this.selectedIndex].text);"/>
                               </div>
                               <div class="col-lg-2">
                               	<label class="control-label">客戶</label>
@@ -306,7 +321,7 @@
                               </div>	　　
                               <div class="col-lg-3">
                               	<label class="control-label">產業類別</label>
-                              	<s:select id="shSection" name="shSection" headerKey="" headerValue="-All-" theme="simple" list="voiceCombo()"/>
+                              	<s:select id="shSection" name="shSection" headerKey="" headerValue="-All-" theme="simple" list="voiceCombo()" onchange="$('#shSectionName').val(this.options[this.selectedIndex].text);"/>
                               </div>	
 	                  	</div>
 	              	</div>
@@ -317,15 +332,15 @@
                          </div>
                          <div class="col-lg-3">
                           	<label class="control-label">調性</label>
-                            <s:select id="shTone" name="shTone" headerKey="" headerValue="-All-" theme="simple" list="toneCombo()" />
+                            <s:select id="shTone" name="shTone" headerKey="" headerValue="-All-" theme="simple" list="toneCombo()" onchange="$('#shToneName').val(this.options[this.selectedIndex].text);"/>
                          </div>
                          <div class="col-lg-2">
                          	<label class="control-label">角色</label>
-                            <s:select id="shRole" name="shRole" headerKey="" headerValue="-All-" theme="simple" list="roleCombo()"/>
+                            <s:select id="shRole" name="shRole" headerKey="" headerValue="-All-" theme="simple" list="roleCombo()" onchange="$('#shRoleName').val(this.options[this.selectedIndex].text);"/>
                          </div>
                     	 <div class="col-lg-2">
                          	<label class="control-label">手法</label>
-                          	<s:select id="shSkill" name="shSkill" headerKey="" headerValue="-All-" theme="simple" list="skillCombo()" />
+                          	<s:select id="shSkill" name="shSkill" headerKey="" headerValue="-All-" theme="simple" list="skillCombo()" onchange="$('#shSkillName').val(this.options[this.selectedIndex].text);"/>
                          </div>	　　
                          <div class="col-lg-3">
                          		<button type="button" class="btn btn-primary" onclick="querySoundList(0);">查詢</button>

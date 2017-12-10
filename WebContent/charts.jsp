@@ -14,6 +14,16 @@
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/style.css">
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/style-responsive.css"/>
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/jquery-ui-1.8.21.custom.css"/>
+<style type="text/css">
+  input[type=text], select {
+	  padding: 6px 10px;
+	  margin: 8px 0;
+	  display: inline-block;
+	  border: 1px solid #ccc;
+	  border-radius: 4px;
+	  box-sizing: border-box;
+  }
+</style>
 <script type="text/javascript" src="<%=request.getContextPath()%>/js/jquery.js"></script>
 <script type="text/javascript" src="<%=request.getContextPath()%>/js/jquery-ui-1.10.4.min.js"></script>
 <script type="text/javascript" src="<%=request.getContextPath()%>/js/i18n/jquery.ui.datepicker-zh-TW.js"></script>

@@ -15,6 +15,14 @@
 <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/css/style-responsive.css"/>
 <%-- <link type="text/css" rel="stylesheet" href="<%=request.getContextPath()%>/process/css/bootstrap.min.css"/> --%>
 <style type="text/css">
+  input[type=text], select {
+	  padding: 6px 10px;
+	  margin: 8px 0;
+	  display: inline-block;
+	  border: 1px solid #ccc;
+	  border-radius: 4px;
+	  box-sizing: border-box;
+  }
   .progress{
 	  height: 25px;
 	  background: #262626;
@@ -79,7 +87,7 @@
 			    	  if(data.success == "true"){
 			    		  var obj = document.getElementById("voices");
 			    		  obj.options.length = 0;
-			    		  obj.options.add(new Option("-All-",""));
+			    		  obj.options.add(new Option("-",""));
 			    		  JSON.parse(data.message, function(key, value) {
 							 	if(key != "" && value != ""){
 									var t = $.trim(value);
