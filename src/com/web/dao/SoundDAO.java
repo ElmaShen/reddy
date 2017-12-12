@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
@@ -84,7 +85,9 @@ public class SoundDAO extends RootDAO {
     		crit.add(Restrictions.eq("role", shRole));
     	}
     	if(!StringUtils.isEmpty(shSkill)){
-    		crit.add(Restrictions.eq("skill", shSkill));
+    		Criterion c1 = Restrictions.like("skill", shSkill+",%");
+    		Criterion c2 = Restrictions.like("skill", "%,"+shSkill+",%");
+    		crit.add(Restrictions.or(c1, c2));
     	}
 		return crit.list().size();
     }
@@ -110,7 +113,7 @@ public class SoundDAO extends RootDAO {
     		hql += "and custName like :custName ";
     	}
     	if(!StringUtils.isEmpty(shTitle)){
-    		hql += "and title = :title ";
+    		hql += "and title like :title ";
     	}
     	if(voices != null && voices.length > 0){
     		if(!StringUtils.isEmpty(shSection)){
@@ -131,7 +134,7 @@ public class SoundDAO extends RootDAO {
     		hql += "and role = :role ";
     	}
     	if(!StringUtils.isEmpty(shSkill)){
-    		hql += "and skill = :skill ";
+    		hql += "and (skill like :skill_a or skill like :skill_b)";
     	}
     	hql += "order by year desc, month desc, cust_name desc ";
     	
@@ -170,7 +173,8 @@ public class SoundDAO extends RootDAO {
     		query.setParameter("role", shRole);
     	}
     	if(!StringUtils.isEmpty(shSkill)){
-    		query.setParameter("skill", shSkill);
+    		query.setParameter("skill_a", shSkill+",%");
+    		query.setParameter("skill_b", "%,"+shSkill+",%");
     	}
         query.setFirstResult(first);
         query.setMaxResults(pageSize);

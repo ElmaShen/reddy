@@ -36,7 +36,7 @@
 			alert(message);
 		}
 		if(success == "Y"){
-			location.href = "<s:url namespace='/' action='soundList' />";
+			$("#shForm").submit();
 		}
 		$("#area").val("台北市");
 		
@@ -205,12 +205,42 @@
 			alert("請填入以下資訊:\n" + msg);
 			return;
 		}
+		
+		$("#m_shYear").val($("#shYear").val());
+		$("#m_shMon").val($("#shMon").val());
+		$("#m_shArea").val($("#shArea").val());
+		$("#m_shCust").val($("#shCust").val());
+		$("#m_shTitle").val($("#shTitle").val());
+		$("#m_shSection").val($("#shSection").val());
+		$("#m_shSecond").val($("#shSecond").val());
+		$("#m_shTone").val($("#shTone").val());
+		$("#m_shRole").val($("#shRole").val());
+		$("#m_shSkill").val($("#shSkill").val());
 		$("#mform").submit();
+	}
+	
+	function resetForm(){
+		$('#shForm').find('input[type=text], textarea').val('');
+		$('select').prop('selectedIndex',0);
+		$("#shForm").submit();
 	}
 	
 	function deleteSound(id){
 		if(confirm("確定刪除檔案!")){
-			location.href="deleteSound.action?id="+id;
+			//location.href="deleteSound.action?id="+id;
+			
+			$("#did").val(id);
+			$("#d_shYear").val($("#shYear").val());
+			$("#d_shMon").val($("#shMon").val());
+			$("#d_shArea").val($("#shArea").val());
+			$("#d_shCust").val($("#shCust").val());
+			$("#d_shTitle").val($("#shTitle").val());
+			$("#d_shSection").val($("#shSection").val());
+			$("#d_shSecond").val($("#shSecond").val());
+			$("#d_shTone").val($("#shTone").val());
+			$("#d_shRole").val($("#shRole").val());
+			$("#d_shSkill").val($("#shSkill").val());
+			$("#dform").submit();
 		}
 	}
 </script>
@@ -344,6 +374,7 @@
                          </div>	　　
                          <div class="col-lg-3">
                          		<button type="button" class="btn btn-primary" onclick="querySoundList(0);">查詢</button>
+                         		<button type="button" class="btn btn-primary" onclick="resetForm();">清除</button>
                          	<s:if test='%{#added eq "Y"}'>
 								<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit_dg" data-backdrop="false" onclick="editSound(0);">新增</button>
                          	</s:if>
@@ -525,6 +556,17 @@
 			   	 			<button type="button" class="btn btn-default" data-dismiss="modal">關閉</button>
 						</div>
 					</div>
+					<!-- query condition -->
+					<s:hidden id="m_shYear" name="shYear"></s:hidden>
+					<s:hidden id="m_shMon" name="shMon"></s:hidden>
+					<s:hidden id="m_shArea" name="shArea"></s:hidden>
+					<s:hidden id="m_shCust" name="shCust"></s:hidden>
+					<s:hidden id="m_shTitle" name="shTitle"></s:hidden>
+					<s:hidden id="m_shSection" name="shSection"></s:hidden>
+					<s:hidden id="m_shSecond" name="shSecond"></s:hidden>
+					<s:hidden id="m_shTone" name="shTone"></s:hidden>
+					<s:hidden id="m_shRole" name="shRole"></s:hidden>
+					<s:hidden id="m_shSkill" name="shSkill"></s:hidden>
 				</s:form>
 			</div>
 		</div>
@@ -601,5 +643,21 @@
 			</div>
 		</div>
 	</div>
+	
+	<s:form id="dform" namespace="/" action="deleteSound" method="post">
+		<s:hidden name="id" id="did"></s:hidden>
+		<!-- query condition -->
+		<s:hidden id="d_shYear" name="shYear"></s:hidden>
+		<s:hidden id="d_shMon" name="shMon"></s:hidden>
+		<s:hidden id="d_shArea" name="shArea"></s:hidden>
+		<s:hidden id="d_shCust" name="shCust"></s:hidden>
+		<s:hidden id="d_shTitle" name="shTitle"></s:hidden>
+		<s:hidden id="d_shSection" name="shSection"></s:hidden>
+		<s:hidden id="d_shSecond" name="shSecond"></s:hidden>
+		<s:hidden id="d_shTone" name="shTone"></s:hidden>
+		<s:hidden id="d_shRole" name="shRole"></s:hidden>
+	<%-- 	<s:hidden id="d_shSkill" name="shSkill"></s:hidden> --%>
+		3333333333<textfield id="d_shSkill" name="shSkill"></textfield>
+	</s:form>
   </body>
 </html>

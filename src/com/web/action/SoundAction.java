@@ -358,6 +358,7 @@ public class SoundAction extends BaseActionSupport implements ServletRequestAwar
 		df.delete();
 		
 		this.systemService.updateSysRecord(user, "音檔管理【刪除】", filePath);
+		success = "Y";
 		return SUCCESS;
 	}
 	
