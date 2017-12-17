@@ -191,7 +191,9 @@
 		    		 }
 					 newRow += '<td>';
 					 if(objs[i].type != "C"){
-						 newRow += '<a class="btn btn-warning" href="onlineReadDoc.action?id='+objs[i].id+'" target="_blank"><i class="icon_zoom-in" title="檢視"></i></a></a>';
+						 //"/pdfjs/web/viewer.html?file=" + encodeURIComponent("/downloadPdf?fileName=" + number + "." + type);  
+						 //newRow += '<a class="btn btn-warning" href="onlineReadDoc.action?id='+objs[i].id+'" target="_blank"><i class="icon_zoom-in" title="檢視"></i></a></a>';
+						 newRow += '<a class="btn btn-warning" href="#" onclick="openPDF('+objs[i].id+');"><i class="icon_zoom-in" title="檢視"></i></a></a>';
 					 }
 					 newRow += '<a class="btn btn-success" href="downloadCust.action?id='+objs[i].id+'" ><i class="icon_cloud-download_alt" title="下載"></i></a>';
     				 newRow += '<a class="btn btn-danger" href="#" onclick="deleteDocument(this, '+objs[i].id+');"><i class="icon_close_alt2" title="刪除"></i></a>';
@@ -202,6 +204,11 @@
 		      },
 		      "json"
 	  	);
+	}
+	
+	function openPDF(id){
+		alert(id);
+		window.location.href = "pdfjs/web/viewer.html?file=" + encodeURIComponent(+"onlineReadDoc.action?id="+id); 
 	}
 	
 	function deleteCust(id){

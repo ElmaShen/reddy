@@ -182,9 +182,9 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
 	public String queryCustomer(){
 		customer = this.customerService.queryCustomerById(id);
 		if(customer != null && !StringUtils.isEmpty(flag)){
+			customer.setSectionName(this.sectionCombo().get(customer.getSection()));
 			if(StringUtils.isNotEmpty(customer.getCategory())){
 				Attribute atr = this.systemService.queryAttributesByKey(AttributeType.category.name(), customer.getCategory(), customer.getSection());
-				customer.setSectionName(this.sectionCombo().get(customer.getSection()));
 				customer.setCategoryName(atr.getAttrName());
 			}
 			
@@ -369,8 +369,8 @@ public class CustomerAction extends BaseActionSupport implements ServletRequestA
                 OpenOffice_HOME += this.SLASH;  
             }  
             // 啟動OpenOffice的服務
-//            String command = OpenOffice_HOME + "soffice.exe -headless -accept=\"socket,host=127.0.0.1,port=8100;urp;\"";
-            String command = OpenOffice_HOME + "soffice -headless -accept=\"socket,host=127.0.0.1,port=8100;urp;\"";
+            String command = OpenOffice_HOME + "soffice.exe -headless -accept=\"socket,host=127.0.0.1,port=8100;urp;\"";
+//            String command = OpenOffice_HOME + "soffice -headless -accept=\"socket,host=127.0.0.1,port=8100;urp;\"";
             Process pro = Runtime.getRuntime().exec(command);  
             OpenOfficeConnection connection = new SocketOpenOfficeConnection("127.0.0.1", 8100);  
             connection.connect();  

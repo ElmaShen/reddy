@@ -228,7 +228,6 @@
 	function deleteSound(id){
 		if(confirm("確定刪除檔案!")){
 			//location.href="deleteSound.action?id="+id;
-			
 			$("#did").val(id);
 			$("#d_shYear").val($("#shYear").val());
 			$("#d_shMon").val($("#shMon").val());
@@ -643,7 +642,8 @@
 			</div>
 		</div>
 	</div>
-	
+  </body>
+              	
 	<s:form id="dform" namespace="/" action="deleteSound" method="post">
 		<s:hidden name="id" id="did"></s:hidden>
 		<!-- query condition -->
@@ -656,8 +656,6 @@
 		<s:hidden id="d_shSecond" name="shSecond"></s:hidden>
 		<s:hidden id="d_shTone" name="shTone"></s:hidden>
 		<s:hidden id="d_shRole" name="shRole"></s:hidden>
-	<%-- 	<s:hidden id="d_shSkill" name="shSkill"></s:hidden> --%>
-		3333333333<textfield id="d_shSkill" name="shSkill"></textfield>
+		<s:hidden id="d_shSkill" name="shSkill"></s:hidden>
 	</s:form>
-  </body>
 </html>

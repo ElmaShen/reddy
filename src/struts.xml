@@ -76,10 +76,7 @@
 			</result>
 	   </action>
 	   <action name="deleteSound" class="com.web.action.SoundAction" method="deleteSound">
-			<result name="success" type="redirectAction">   
-            	<param name="namespace">/</param>   
-			    <param name="actionName">soundList</param>   
-			</result>
+	   		<result name="success" type="dispatcher">/sound.jsp</result>
         </action>
 	</package>
 	
